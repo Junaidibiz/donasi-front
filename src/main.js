@@ -20,7 +20,12 @@ import mixins from "./mixins";
 /**
  * Vue Router
  */
-import router from "./router"; // Pastikan baris ini ada
+import router from "./router";
+
+/**
+ * Vuex
+ */
+import store from "./store"; // Import root store Vuex
 
 //create App Vue
 const app = createApp(App);
@@ -32,6 +37,9 @@ app.use(Toast);
 app.mixin(mixins);
 
 //gunakan "router" di Vue Js dengan plugin "use"
-app.use(router); // Pastikan baris ini ada dan tidak ada typo
+app.use(router);
+
+//gunakan "store" di Vue Js dengan plugin "use"
+app.use(store); // Daftarkan store secara global
 
 app.mount("#app");
