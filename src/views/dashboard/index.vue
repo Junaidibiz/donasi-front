@@ -3,8 +3,12 @@
     <div class="container mx-auto grid grid-cols-1 p-3 sm:w-full md:w-5/12">
       <div class="bg-white p-5 rounded-md shadow-md mb-5">
         <div class="grid grid-cols-1 md:grid-cols-12 items-center gap-4">
-          <div class="col-span-1 md:col-span-2">
-            <img :src="user.avatar" class="rounded-full w-30 h-30" />
+          <div class="col-span-1 md:col-span-2 w-24 h-24 flex-shrink-0">
+            <img
+              :src="avatarUrlComputed"
+              class="rounded-full w-full h-full object-cover"
+              alt="User Avatar"
+            />
           </div>
           <div class="col-span-1 md:col-span-6">
             <div class="font-bold text-base">
@@ -66,36 +70,46 @@
 </template>
 
 <script>
-//hook vuex
-import { useStore } from "vuex"; // Impor useStore dari Vuex
-//hook vue
-import { computed, onMounted } from "vue"; // Impor computed dan onMounted dari Vue
+import { useStore } from "vuex";
+import { computed, onMounted } from "vue";
 
 export default {
   name: "DashboardComponent",
   setup() {
-    //store vuex
-    const store = useStore(); // Inisialisasi store Vuex
+    const store = useStore();
 
-    //mounted
     onMounted(() => {
-      // Hook onMounted untuk menjalankan kode saat komponen dipasang
-      //panggil action "getUser" dari module "auth" vuex
-      store.dispatch("auth/getUser"); // Memanggil action 'auth/getUser'
+      store.dispatch("auth/getUser"); //
     });
 
-    //data user login
     const user = computed(() => {
-      // State user yang bersifat computed dan reaktif
-      return store.state.auth.user; // Mengambil data user dari state Vuex auth module
+      return store.state.auth.user; //
     });
 
-    //return a state and function
+    const avatarUrlComputed = computed(() => {
+      // Jika user dan user.name ada
+      if (user.value && user.value.name) {
+        // Jika user.avatar dari backend ada dan bukan null/undefined, gunakan itu.
+        // Jika tidak, gunakan UI-Avatars.com
+        return (
+          user.value.avatar ||
+          `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            user.value.name
+          )}&background=random&color=fff&size=128`
+        );
+      }
+      // Fallback jika user atau nama belum tersedia (misal saat inisialisasi)
+      return "";
+    });
+
     return {
-      user, // <-- state user
+      user, //
+      avatarUrlComputed,
     };
   },
 };
 </script>
 
-<style></style>
+<style>
+/* Anda dapat menambahkan gaya khusus di sini jika diperlukan, atau biarkan kosong jika sepenuhnya menggunakan Tailwind */
+</style>
