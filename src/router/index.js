@@ -35,12 +35,22 @@ const routes = [
     },
   },
   {
-    path: "/donation", // <-- ROUTE BARU UNTUK DONASI
+    path: "/donation",
     name: "donation.index",
     component: () =>
       import(
         /* webpackChunkName: "donationIndex" */ "../views/donation/Index.vue"
       ),
+    meta: {
+      //chek is loggedIn
+      requiresAuth: true,
+    },
+  },
+  {
+    path: "/profile", // <-- ROUTE BARU UNTUK PROFILE
+    name: "profile",
+    component: () =>
+      import(/* webpackChunkName: "profile" */ "../views/profile/Index.vue"),
     meta: {
       //chek is loggedIn
       requiresAuth: true, // <-- Memerlukan autentikasi
