@@ -10,7 +10,7 @@
               alt="User Avatar"
             />
           </div>
-          <div class="col-span-1 md:col-span-6">
+          <div class="col-span-1 md:col-span-6 pl-4">
             <div class="font-bold text-base">
               {{ user.name }}
             </div>
@@ -55,7 +55,7 @@
           </div>
         </a>
 
-        <a href="#">
+        <a @click="logout" style="cursor: pointer">
           <div
             class="grid grid-cols-5 gap-4 bg-gray-300 p-3 rounded-md shadow-sm mb-3"
           >
@@ -70,27 +70,39 @@
 </template>
 
 <script>
+//hook vuex
 import { useStore } from "vuex";
+//hook vue router
+import { useRouter } from "vue-router"; // <-- TAMBAHKAN IMPOR INI
+//hook vue
 import { computed, onMounted } from "vue";
+//hook Toast
+import { useToast } from "vue-toastification"; // <-- TAMBAHKAN IMPOR INI
 
 export default {
   name: "DashboardComponent",
   setup() {
+    //store vuex
     const store = useStore();
+    //vue router
+    const router = useRouter(); // <-- INISIALISASI INI
+    // Same interface as this.$toast
+    const toast = useToast(); // <-- INISIALISASI INI
 
+    //mounted
     onMounted(() => {
-      store.dispatch("auth/getUser"); //
+      //panggil action "getUser" dari module "auth" vuex
+      store.dispatch("auth/getUser");
     });
 
+    //data user login
     const user = computed(() => {
-      return store.state.auth.user; //
+      return store.state.auth.user;
     });
 
+    // Computed property untuk URL avatar inisial
     const avatarUrlComputed = computed(() => {
-      // Jika user dan user.name ada
       if (user.value && user.value.name) {
-        // Jika user.avatar dari backend ada dan bukan null/undefined, gunakan itu.
-        // Jika tidak, gunakan UI-Avatars.com
         return (
           user.value.avatar ||
           `https://ui-avatars.com/api/?name=${encodeURIComponent(
@@ -98,13 +110,27 @@ export default {
           )}&background=random&color=fff&size=128`
         );
       }
-      // Fallback jika user atau nama belum tersedia (misal saat inisialisasi)
       return "";
     });
 
+    // method logout
+    function logout() {
+      // <-- FUNGSI LOGOUT BARU
+      //panggil action "logout" di dalam module "auth"
+      store.dispatch("auth/logout").then(() => {
+        //jika berhasil, akan di arahkan ke route login
+        router.push({
+          name: "login",
+        });
+        toast.success("Logout Berhasil!");
+      });
+    }
+
+    //return a state and function
     return {
-      user, //
-      avatarUrlComputed,
+      logout, // <-- METHOD LOGOUT DI-RETURN
+      user,
+      avatarUrlComputed, // <-- PASTIKAN INI MASIH DI-RETURN
     };
   },
 };
