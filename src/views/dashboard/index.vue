@@ -70,55 +70,51 @@
 </template>
 
 <script>
-//hook vuex
 import { useStore } from "vuex";
-//hook vue router
-import { useRouter } from "vue-router"; // <-- TAMBAHKAN IMPOR INI
-//hook vue
+import { useRouter } from "vue-router";
 import { computed, onMounted } from "vue";
-//hook Toast
-import { useToast } from "vue-toastification"; // <-- TAMBAHKAN IMPOR INI
+import { useToast } from "vue-toastification";
 
 export default {
   name: "DashboardComponent",
   setup() {
-    //store vuex
     const store = useStore();
-    //vue router
-    const router = useRouter(); // <-- INISIALISASI INI
-    // Same interface as this.$toast
-    const toast = useToast(); // <-- INISIALISASI INI
+    const router = useRouter();
+    const toast = useToast();
 
-    //mounted
     onMounted(() => {
-      //panggil action "getUser" dari module "auth" vuex
       store.dispatch("auth/getUser");
     });
 
-    //data user login
     const user = computed(() => {
       return store.state.auth.user;
     });
 
-    // Computed property untuk URL avatar inisial
     const avatarUrlComputed = computed(() => {
       if (user.value && user.value.name) {
-        return (
-          user.value.avatar ||
-          `https://ui-avatars.com/api/?name=${encodeURIComponent(
+        if (user.value.avatar) {
+          const LARAVEL_STORAGE_BASE_URL =
+            "http://donasi-dm.test/storage/donaturs/"; // <-- SESUAIKAN INI
+
+          if (
+            user.value.avatar.startsWith("http://") ||
+            user.value.avatar.startsWith("https://")
+          ) {
+            return user.value.avatar;
+          } else {
+            return `${LARAVEL_STORAGE_BASE_URL}${user.value.avatar}`;
+          }
+        } else {
+          return `https://ui-avatars.com/api/?name=${encodeURIComponent(
             user.value.name
-          )}&background=random&color=fff&size=128`
-        );
+          )}&background=random&color=fff&size=128`;
+        }
       }
       return "";
     });
 
-    // method logout
     function logout() {
-      // <-- FUNGSI LOGOUT BARU
-      //panggil action "logout" di dalam module "auth"
       store.dispatch("auth/logout").then(() => {
-        //jika berhasil, akan di arahkan ke route login
         router.push({
           name: "login",
         });
@@ -126,11 +122,10 @@ export default {
       });
     }
 
-    //return a state and function
     return {
-      logout, // <-- METHOD LOGOUT DI-RETURN
+      logout,
       user,
-      avatarUrlComputed, // <-- PASTIKAN INI MASIH DI-RETURN
+      avatarUrlComputed,
     };
   },
 };

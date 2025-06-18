@@ -26,9 +26,8 @@ const auth = {
     },
     //fungsi logout
     AUTH_LOGOUT(state) {
-      // <-- MUTATION LOGOUT BARU
-      state.token = ""; // <-- set state token ke empty
-      state.user = {}; // <-- set state user ke empty object
+      state.token = "";
+      state.user = {};
     },
   },
 
@@ -44,6 +43,7 @@ const auth = {
           password_confirmation: user.password_confirmation,
         })
           .then((response) => {
+            // PASTIKAN PENGAMBILAN TOKEN DAN USER SESUAI DENGAN RESPON BACKEND
             const token = response.data.access_token;
             const user = response.data.donatur;
 
@@ -73,39 +73,69 @@ const auth = {
         })
         .catch((error) => {
           console.error("Error fetching user data:", error);
-          // Pertimbangkan untuk logout otomatis jika token tidak valid
-          // commit('AUTH_LOGOUT');
-          // localStorage.removeItem('token');
-          // localStorage.removeItem('user');
-          // delete Api.defaults.headers.common['Authorization'];
+          // Jika ada error saat mendapatkan user, mungkin token tidak valid, lakukan logout
+          if (error.response && error.response.status === 401) {
+            // Unauthorized
+            commit("AUTH_LOGOUT");
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            delete Api.defaults.headers.common["Authorization"];
+            // Bisa juga redirect ke halaman login di sini jika diinginkan
+          }
         });
     },
     //action logout
     logout({ commit }) {
-      // <-- ACTION LOGOUT BARU
       return new Promise((resolve) => {
-        // commit ke mutation AUTH_LOGOUT
-        commit("AUTH_LOGOUT"); // <-- Panggil mutation AUTH_LOGOUT
+        // API request to backend to invalidate token (optional, but good practice for security)
+        // Api.post('/logout').then(() => { /* handle success */ }).catch(() => { /* handle error */ });
 
-        // remove value dari localStorage
-        localStorage.removeItem("token"); // <-- Hapus token dari localStorage
-        localStorage.removeItem("user"); // <-- Hapus user dari localStorage
+        commit("AUTH_LOGOUT");
 
-        // delete header axios
-        delete Api.defaults.headers.common["Authorization"]; // <-- Hapus header Authorization Axios
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
 
-        // return resolve ke component
-        resolve(); // <-- Resolve promise
+        delete Api.defaults.headers.common["Authorization"];
+
+        resolve();
+      });
+    },
+    //action login
+    login({ commit }, user) {
+      // <-- ACTION LOGIN BARU
+      return new Promise((resolve, reject) => {
+        Api.post("/login", {
+          // <-- Endpoint Login Laravel
+          email: user.email,
+          password: user.password,
+        })
+          .then((response) => {
+            // PASTIKAN PENGAMBILAN TOKEN DAN USER SESUAI DENGAN RESPON BACKEND
+            const token = response.data.access_token; // <-- Ambil access_token
+            const user = response.data.donatur; // <-- Ambil donatur
+
+            localStorage.setItem("token", token); // <-- Simpan token ke localStorage
+            localStorage.setItem("user", JSON.stringify(user)); // <-- Simpan user ke localStorage
+
+            Api.defaults.headers.common["Authorization"] = `Bearer ${token}`; // <-- Atur header Authorization
+
+            commit("AUTH_SUCCESS", token, user); // <-- Commit AUTH_SUCCESS
+            commit("GET_USER", user); // <-- Commit GET_USER
+
+            resolve(response); // <-- Resolve promise
+          })
+          .catch((error) => {
+            localStorage.removeItem("token"); // <-- Hapus token jika login gagal
+            reject(error.response.data); // <-- Reject promise dengan error
+          });
       });
     },
   },
   //getters
   getters: {
-    //get current user
     currentUser(state) {
       return state.user;
     },
-    //loggedIn
     isLoggedIn(state) {
       return state.token;
     },
