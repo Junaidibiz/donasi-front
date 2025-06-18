@@ -1,7 +1,7 @@
 //import vue router
 import { createRouter, createWebHistory } from "vue-router";
 //import store vuex
-import store from "../store"; // Impor root store Vuex
+import store from "../store";
 
 //define a routes
 const routes = [
@@ -23,16 +23,27 @@ const routes = [
       import(/* webpackChunkName: "login" */ "../views/auth/Login.vue"),
   },
   {
-    path: "/dashboard", // Route baru untuk dashboard
+    path: "/dashboard",
     name: "dashboard",
     component: () =>
       import(
         /* webpackChunkName: "dashboard" */ "../views/dashboard/Index.vue"
       ),
     meta: {
-      // Metadata untuk route ini
       //chek is loggedIn
-      requiresAuth: true, // Menandai route ini memerlukan autentikasi
+      requiresAuth: true,
+    },
+  },
+  {
+    path: "/donation", // <-- ROUTE BARU UNTUK DONASI
+    name: "donation.index",
+    component: () =>
+      import(
+        /* webpackChunkName: "donationIndex" */ "../views/donation/Index.vue"
+      ),
+    meta: {
+      //chek is loggedIn
+      requiresAuth: true, // <-- Memerlukan autentikasi
     },
   },
 ];
@@ -45,17 +56,15 @@ const router = createRouter({
 
 //define route for handle authentication
 router.beforeEach((to, from, next) => {
-  // Navigation guard
   if (to.matched.some((record) => record.meta.requiresAuth)) {
     //cek nilai dari getters isLoggedIn di module auth
     if (store.getters["auth/isLoggedIn"]) {
-      // Memeriksa status login melalui getter Vuex
-      next(); // Lanjutkan ke route yang dituju
+      next();
       return;
     }
-    next("/login"); // Redirect ke halaman login jika belum login
+    next("/login");
   } else {
-    next(); // Lanjutkan jika route tidak memerlukan autentikasi
+    next();
   }
 });
 
