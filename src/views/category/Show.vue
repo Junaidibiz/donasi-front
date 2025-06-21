@@ -1,19 +1,17 @@
 <template>
   <div class="pb-20 pt-20">
-    <div class="container mx-auto grid grid-cols-1 p-3 sm:w-full md:w-5/12">
-      <!-- slider -->
-      <div class="grid grid-cols-1 bg-white rounded shadow-md p-1 text-sm mb-5">
-        <SliderComponent />
-      </div>
-
-      <!-- categoryHome -->
-      <CategoryHomeComponent />
-
-      <!-- campaign -->
-      <div v-if="campaigns.length > 0">
+    <div class="container mx-auto grid grid-cols-1 p-5 sm:w-full md:w-5/12">
+      <div v-if="campaignCategory.length > 0">
+        <h3>
+          <i class="fa fa-list-ul"></i> KATEGORI
+          <strong>{{
+            category.name ? category.name.toUpperCase() : ""
+          }}</strong>
+        </h3>
         <div class="mt-5">
+          <!-- Removed grid-cols-4 from here -->
           <div
-            v-for="campaign in campaigns"
+            v-for="campaign in campaignCategory"
             :key="campaign.id"
             class="grid grid-cols-4 gap-4 mb-4"
           >
@@ -26,8 +24,9 @@
                     width="384"
                     height="512"
                   />
+                  <!-- Use campaign.imageComputed -->
                   <div
-                    class="w-full pt-6 p-5 md:p-3 text-center md:text-left space-y-4"
+                    class="pt-6 p-5 md:p-3 text-center md:text-left space-y-4"
                   >
                     <router-link
                       :to="{
@@ -111,53 +110,47 @@
           </div>
         </div>
       </div>
-      <!-- Pastikan div v-else ini langsung setelah div v-if sebelumnya tanpa ada spasi/newline/komentar di antaranya -->
       <div v-else>
-        <!-- Loading block for campaigns -->
-        <div
-          v-for="index in 2"
-          :key="index"
-          class="grid grid-cols-1 bg-white rounded shadow-md p-3 text-sm mt-4 mb-4"
-        >
-          <FacebookLoader class="h-24" />
+        <div class="mb-3 bg-red-500 text-white p-4 rounded-md">
+          Data Campaign Berdasarkan Kategori
+          <strong>{{ category.name ? category.name : "" }}</strong> Belum
+          Tersedia!
         </div>
-      </div>
-      <!-- Load More button -->
-      <div class="text-center mt-4 mb-4" v-show="nextExists">
-        <a
-          @click="loadMore"
-          class="bg-gray-700 text-white p-2 px-3 rounded-md shadow-md focus:outline-none focus:bg-gray-900 cursor-pointer"
-        >
-          LIHAT SEMUA <i class="fa fa-long-arrow-alt-right"></i>
-        </a>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { computed, onMounted } from "vue";
+//hook vue
+import { onMounted, computed } from "vue";
+//hook vuex
 import { useStore } from "vuex";
-import SliderComponent from "../../components/Slider.vue";
-import CategoryHomeComponent from "../../components/CategoryHome.vue";
-import { FacebookLoader } from "vue-content-loader";
+//hook vue router
+import { useRoute } from "vue-router"; // <-- Import useRoute
 
 export default {
-  name: "HomeComponent",
-  components: {
-    SliderComponent,
-    CategoryHomeComponent,
-    FacebookLoader,
-  },
+  name: "CategoryShowComponent",
   setup() {
+    //store vuex
     const store = useStore();
+    //const route
+    const route = useRoute(); // <-- Inisialisasi useRoute
 
+    //onMounted will run "getDetailCategory" action in "category" module
     onMounted(() => {
-      store.dispatch("campaign/getCampaign");
+      store.dispatch("category/getDetailCategory", route.params.slug); // <-- Dispatch action with slug
     });
 
-    const campaigns = computed(() => {
-      return store.state.campaign.campaigns.map((campaign) => {
+    //used to get state "category" in "category" module
+    const category = computed(() => {
+      return store.state.category.category;
+    });
+
+    //used to get campaign data in "campaignCategory" state in "category" module
+    const campaignCategory = computed(() => {
+      // KOREKSI: Map data campaignCategory untuk menambahkan properti imageComputed (sama seperti di Home.vue)
+      return store.state.category.campaignCategory.map((campaign) => {
         const LARAVEL_BASE_URL = "http://donasi-dm.test"; // <-- SESUAIKAN DENGAN BASE URL DOMAIN BACKEND ANDA
 
         let imageUrl;
@@ -170,7 +163,8 @@ export default {
           if (campaign.image.startsWith("/storage")) {
             imageUrl = `${LARAVEL_BASE_URL}${campaign.image}`;
           } else {
-            imageUrl = `${LARAVEL_BASE_URL}/storage/campaigns/${campaign.image}`;
+            // Assume path in database is relative to public/storage/campaigns/ (e.g. 'campaigns/image.png')
+            imageUrl = `${LARAVEL_BASE_URL}/storage/campaigns/${campaign.image}`; // <-- Adjust folder if different
           }
         }
 
@@ -181,26 +175,12 @@ export default {
       });
     });
 
-    const nextExists = computed(() => {
-      return store.state.campaign.nextExists;
-    });
-    const nextPage = computed(() => {
-      return store.state.campaign.nextPage;
-    });
-
-    function loadMore() {
-      store.dispatch("campaign/getLoadMore", nextPage.value);
-    }
-
     return {
-      campaigns,
-      nextExists,
-      nextPage,
-      loadMore,
+      category, // <-- state category
+      campaignCategory, // <-- state campaignCategory
     };
   },
 };
 </script>
-<style>
-/* You can add custom styles here if needed, or leave it empty if fully using Tailwind */
-</style>
+
+<style></style>

@@ -9,8 +9,10 @@
           :key="category.id"
           class="col-span-2 md:col-span-2 lg:col-span-1 bg-white rounded-md shadow-md p-4 text-center text-xs"
         >
-          <a href="#">
-            <!-- LINK INI NANTI BISA DIARAHKAN KE HALAMAN DETAIL KATEGORI -->
+          <!-- Link ke detail kategori -->
+          <router-link
+            :to="{ name: 'category.show', params: { slug: category.slug } }"
+          >
             <div>
               <img
                 :src="category.imageComputed"
@@ -19,14 +21,14 @@
               />
             </div>
             {{ category.name.toUpperCase() }}
-          </a>
+          </router-link>
         </div>
-        <!-- Card "LAINNYA" -->
+        <!-- Card "LAINNYA" - UBAH INI -->
         <div
           class="col-span-2 md:col-span-1 lg:col-span-1 bg-white rounded-md shadow-md p-4 text-center text-xs"
         >
-          <a href="#">
-            <!-- LINK INI NANTI BISA DIARAHKAN KE HALAMAN SEMUA KATEGORI -->
+          <!-- UBAH INI MENJADI router-link ke halaman index kategori -->
+          <router-link :to="{ name: 'category.index' }">
             <div>
               <img
                 src="../assets/images/menu.png"
@@ -35,7 +37,7 @@
               />
             </div>
             LAINNYA
-          </a>
+          </router-link>
         </div>
       </div>
     </div>
@@ -57,39 +59,39 @@
 </template>
 
 <script>
-//hook vue
 import { computed, onMounted } from "vue";
-//vuex
 import { useStore } from "vuex";
-//vue content loader
 import { ContentLoader } from "vue-content-loader";
 
 export default {
   name: "CategoryHomeComponent",
   components: {
-    ContentLoader, // <-- register content loader
+    ContentLoader,
   },
   setup() {
-    //store vuex
     const store = useStore();
-    //onMounted will run "getCategoryHome" action in "category" module
     onMounted(() => {
       store.dispatch("category/getCategoryHome");
     });
 
-    //used to get "categories" state data in "category" module
     const categories = computed(() => {
-      // KOREKSI: Map data category untuk menambahkan properti imageComputed
       return store.state.category.categories.map((category) => {
-        // !!! PENTING: SESUAIKAN BASE URL STORAGE LARAVEL ANDA DI SINI !!!
-        // Contoh: 'http://localhost:8000/' jika kategori image disimpan di public_path()
-        // Atau 'http://donasi-dm.test/storage/categories/' jika disimpan di storage/app/public/categories/
-        const LARAVEL_BASE_URL = "http://donasi-dm.test"; // <-- SESUAIKAN DENGAN BASE URL DOMAIN BACKEND ANDA
+        const LARAVEL_BASE_URL = "http://donasi-dm.test"; // ADJUST THIS
 
-        // Jika path gambar adalah relatif (misal '/categories/icon.png'), tambahkan base URL domain
-        const imageUrl = category.image.startsWith("/")
-          ? `${LARAVEL_BASE_URL}${category.image}`
-          : category.image;
+        let imageUrl;
+        if (
+          category.image.startsWith("http://") ||
+          category.image.startsWith("https://")
+        ) {
+          imageUrl = category.image;
+        } else {
+          if (category.image.startsWith("/storage")) {
+            imageUrl = `${LARAVEL_BASE_URL}${category.image}`;
+          } else {
+            imageUrl = `${LARAVEL_BASE_URL}/storage/category_icons/${category.image}`;
+          }
+        }
+
         return {
           ...category,
           imageComputed: imageUrl,
@@ -98,12 +100,12 @@ export default {
     });
 
     return {
-      categories, // <-- categories
+      categories,
     };
   },
 };
 </script>
 
 <style>
-/* Anda dapat menambahkan gaya khusus di sini jika diperlukan, atau biarkan kosong jika sepenuhnya menggunakan Tailwind */
+/* You can add custom styles here if needed, or leave it empty if fully using Tailwind */
 </style>

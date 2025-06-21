@@ -1,42 +1,87 @@
-//import global API
+// Import global API
 import Api from "../../api/Api";
 
 const category = {
-  //set namespace true
+  // Set namespace true
   namespaced: true,
 
-  //state
+  // State
   state: {
-    //index categories
-    categories: [], // <-- Array to store category data
+    // Index categories (for homepage and category index page)
+    categories: [],
+    // Detail category (for category show page)
+    category: {},
+    // Campaigns associated with the specific category (for category show page)
+    campaignCategory: [],
   },
 
-  //mutations
+  // Mutations
   mutations: {
-    //set state categories with data from response
+    // Set state 'categories' with data from response
     SET_CATEGORIES(state, data) {
       state.categories = data;
     },
+    // Set state 'category' with detail data from response
+    DETAIL_CATEGORY(state, data) {
+      state.category = data;
+    },
+    // Set state 'campaignCategory' with campaign data from response
+    CAMPAIGN_CATEGORY(state, data) {
+      state.campaignCategory = data;
+    },
   },
 
-  //actions
+  // Actions
   actions: {
-    //action getCategoryHome
+    // Action to get categories for homepage (limited number, no auth required)
     getCategoryHome({ commit }) {
-      //get category data from server for homepage
-      Api.get("/categoryHome") // <-- Backend API endpoint for homepage categories
+      Api.get("/categoryHome")
         .then((response) => {
-          //commit to SET_CATEGORIES mutation with response data
-          commit("SET_CATEGORIES", response.data.data); // <-- Category data from API response
+          commit("SET_CATEGORIES", response.data.data);
         })
         .catch((error) => {
-          //show error log from response
           console.log(error);
-          // Optional: Handle CORS or other network errors here
+          // Optional: handle network/CORS errors
+        });
+    },
+    // Action to get all categories (for category index page, potentially paginated)
+    getCategory({ commit }) {
+      Api.get("/category") // Assumes this endpoint returns paginated data (e.g., .data.data.data)
+        .then((response) => {
+          commit("SET_CATEGORIES", response.data.data.data); // Adjust if backend doesn't paginate
+        })
+        .catch((error) => {
+          console.log(error);
+          // Optional: handle network/CORS errors
+        });
+    },
+    // Action to get a specific category's details and its associated campaigns by slug
+    getDetailCategory({ commit }, slug) {
+      Api.get(`/category/${slug}`)
+        .then((response) => {
+          commit("DETAIL_CATEGORY", response.data.data); // Commit detail category data
+          commit("CAMPAIGN_CATEGORY", response.data.data.campaigns); // Commit associated campaigns
+        })
+        .catch((error) => {
+          console.log(error);
+          // Optional: handle 404 (not found) or other errors
         });
     },
   },
-  //getters
-  getters: {},
+  // Getters (can be added here if needed to retrieve specific state data)
+  getters: {
+    // Example: get all categories from state
+    getAllCategories(state) {
+      return state.categories;
+    },
+    // Example: get the detailed category object
+    getDetailedCategory(state) {
+      return state.category;
+    },
+    // Example: get campaigns for the detailed category
+    getCampaignsByCategory(state) {
+      return state.campaignCategory;
+    },
+  },
 };
 export default category;

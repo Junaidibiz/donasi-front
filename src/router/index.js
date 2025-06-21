@@ -3,7 +3,7 @@ import { createRouter, createWebHistory } from "vue-router";
 // Import store vuex
 import store from "../store";
 
-// Define a routes
+// Define routes
 const routes = [
   {
     path: "/register",
@@ -25,7 +25,6 @@ const routes = [
         /* webpackChunkName: "dashboard" */ "../views/dashboard/Index.vue"
       ),
     meta: {
-      // Check if loggedIn
       requiresAuth: true,
     },
   },
@@ -37,7 +36,6 @@ const routes = [
         /* webpackChunkName: "donationIndex" */ "../views/donation/Index.vue"
       ),
     meta: {
-      // Check if loggedIn
       requiresAuth: true,
     },
   },
@@ -47,7 +45,6 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "profile" */ "../views/profile/Index.vue"),
     meta: {
-      // Check if loggedIn
       requiresAuth: true,
     },
   },
@@ -59,28 +56,54 @@ const routes = [
         /* webpackChunkName: "profilePassword" */ "../views/profile/Password.vue"
       ),
     meta: {
-      // Check if loggedIn
       requiresAuth: true,
     },
   },
   {
-    path: "/", // <-- NEW ROUTE FOR HOMEPAGE
+    path: "/",
     name: "home",
     component: () =>
-      import(/* webpackChunkName: "home" */ "../views/home/Index.vue"), // <-- Points to the new homepage component
+      import(/* webpackChunkName: "home" */ "../views/home/Index.vue"),
+  },
+  {
+    path: "/campaign/:slug",
+    name: "campaign.show",
+    component: () =>
+      import(
+        /* webpackChunkName: "campaignShow" */ "../views/campaign/Show.vue"
+      ),
+  },
+  // --- NEW ROUTE FOR CATEGORY INDEX ---
+  {
+    path: "/category", // The path you are trying to access
+    name: "category.index", // The name of the route
+    component: () =>
+      import(
+        /* webpackChunkName: "categoryIndex" */ "../views/category/Index.vue"
+      ),
+    // meta: { requiresAuth: false } // Categories index usually public, adjust if needed
+  },
+  // --- NEW ROUTE FOR CATEGORY DETAIL ---
+  {
+    path: "/category/:slug", // Dynamic segment for category slug
+    name: "category.show", // The name for category detail
+    component: () =>
+      import(
+        /* webpackChunkName: "categoryDetail" */ "../views/category/Show.vue"
+      ),
+    // meta: { requiresAuth: false } // Category detail usually public
   },
 ];
 
 // Create router
 const router = createRouter({
   history: createWebHistory(),
-  routes, // <-- routes
+  routes,
 });
 
 // Define route for handle authentication
 router.beforeEach((to, from, next) => {
   if (to.matched.some((record) => record.meta.requiresAuth)) {
-    // Check "isLoggedIn" getter value in "auth" module
     if (store.getters["auth/isLoggedIn"]) {
       next();
       return;
