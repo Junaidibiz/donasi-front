@@ -93,10 +93,10 @@
         <div class="border-2 border-gray-200 mt-3 mb-2"></div>
         <div class="bg-gray-200 p-3 rounded shadow-md mb-3">
           <div class="grid grid-cols-10 gap-4 items-center">
-            <div class="col-span-2">
+            <div class="col-span-2 w-16 h-16 flex-shrink-0">
               <img
                 :src="user.avatarComputed"
-                class="w-15 h-15 rounded-full shadow object-cover"
+                class="w-full h-full rounded-full shadow object-cover"
               />
             </div>
             <div class="col-span-8 text-lg font-bold">
@@ -129,10 +129,10 @@
           class="bg-gray-200 p-3 rounded shadow-md mb-3"
         >
           <div class="grid grid-cols-10 gap-4">
-            <div class="col-span-1">
+            <div class="col-span-1 w-16 h-16 flex-shrink-0">
               <img
                 :src="donation.donatur.avatarComputed"
-                class="w-15 h-15 rounded-full object-cover"
+                class="w-full h-full rounded-full object-cover"
               />
             </div>
             <div class="col-span-9 mt-1">
@@ -185,7 +185,7 @@ export default {
       if (!fetchedCampaign || !fetchedCampaign.id) {
         return {};
       }
-      const LARAVEL_BASE_URL = "http://donasi-dm.test"; // <-- ADJUST THIS
+      const LARAVEL_BASE_URL = "http://donasi-dm.test"; // <-- SESUAIKAN DENGAN BASE URL DOMAIN BACKEND ANDA
 
       let imageUrl;
       if (
@@ -198,10 +198,10 @@ export default {
         if (fetchedCampaign.image.startsWith("/storage")) {
           imageUrl = `${LARAVEL_BASE_URL}${fetchedCampaign.image}`;
         } else {
-          imageUrl = `${LARAVEL_BASE_URL}/storage/campaigns/${fetchedCampaign.image}`;
+          imageUrl = `${LARAVEL_BASE_URL}/storage/campaigns/${fetchedCampaign.image}`; // Adjust folder if different
         }
       } else {
-        imageUrl = "https://placehold.co/384x512/E0E0E0/333333?text=No+Image";
+        imageUrl = "https://placehold.co/384x512/E0E0E0/333333?text=No+Image"; // Placeholder image
       }
 
       return {
@@ -215,18 +215,13 @@ export default {
       if (!fetchedUser || !fetchedUser.id) {
         return {};
       }
-      const LARAVEL_STORAGE_BASE_URL_AVATAR =
-        "http://donasi-dm.test/storage/donaturs/"; // ADJUST THIS
+      // KOREKSI UTAMA: Gunakan profile_photo_url jika ada, jika tidak, fallback ke ui-avatars.com
       let avatarUrl;
-      if (
-        fetchedUser.avatar &&
-        (fetchedUser.avatar.startsWith("http://") ||
-          fetchedUser.avatar.startsWith("https://"))
-      ) {
-        avatarUrl = fetchedUser.avatar;
-      } else if (fetchedUser.avatar) {
-        avatarUrl = `${LARAVEL_STORAGE_BASE_URL_AVATAR}${fetchedUser.avatar}`;
+      if (fetchedUser.profile_photo_url) {
+        // <-- PERIKSA profile_photo_url
+        avatarUrl = fetchedUser.profile_photo_url; // Ini sudah URL lengkap dari backend
       } else {
+        // Fallback ke UI-Avatars jika profile_photo_url adalah null/undefined/empty
         avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
           fetchedUser.name || "User"
         )}&background=random&color=fff&size=128`;
@@ -242,13 +237,11 @@ export default {
     });
 
     const donations = computed(() => {
-      // Check if store.state.campaign.donations is an array, if not, return empty array
       const fetchedDonations = Array.isArray(store.state.campaign.donations)
         ? store.state.campaign.donations
         : [];
 
       return fetchedDonations.map((donation) => {
-        // Ensure donatur exists
         if (!donation.donatur) {
           return {
             ...donation,
@@ -260,18 +253,13 @@ export default {
           };
         }
 
-        const LARAVEL_STORAGE_BASE_URL_DONATUR_AVATAR =
-          "http://donasi-dm.test/storage/donaturs/"; // ADJUST THIS
+        // KOREKSI: Gunakan profile_photo_url untuk donatur, jika tidak, fallback ke ui-avatars.com
         let donaturAvatarUrl;
-        if (
-          donation.donatur.avatar &&
-          (donation.donatur.avatar.startsWith("http://") ||
-            donation.donatur.avatar.startsWith("https://"))
-        ) {
-          donaturAvatarUrl = donation.donatur.avatar;
-        } else if (donation.donatur.avatar) {
-          donaturAvatarUrl = `${LARAVEL_STORAGE_BASE_URL_DONATUR_AVATAR}${donation.donatur.avatar}`;
+        if (donation.donatur.profile_photo_url) {
+          // <-- PERIKSA profile_photo_url donatur
+          donaturAvatarUrl = donation.donatur.profile_photo_url; // Ini sudah URL lengkap
         } else {
+          // Fallback ke UI-Avatars jika profile_photo_url donatur adalah null/undefined/empty
           donaturAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
             donation.donatur.name || "Donatur"
           )}&background=random&color=fff&size=128`;
