@@ -1,20 +1,24 @@
-//import vuex
+// Import vuex
 import { createStore } from "vuex";
 
-//import module auth
+// Import module auth
 import auth from "./module/auth";
 
-//import module donation
+// Import module donation
 import donation from "./module/donation";
 
-//import module profile
-import profile from "./module/profile"; // <-- TAMBAHKAN IMPOR INI
+// Import module profile
+import profile from "./module/profile";
 
-//create store vuex
+// Import module slider
+import slider from "./module/slider"; // <-- ADD THIS IMPORT
+
+// Create store vuex
 export default createStore({
   modules: {
-    auth, // <-- module auth
-    donation, // <-- module donation
-    profile, // <-- TAMBAHKAN MODUL INI
+    auth, // <-- auth module
+    donation, // <-- donation module
+    profile, // <-- profile module
+    slider, // <-- ADD THIS MODULE
   },
 });

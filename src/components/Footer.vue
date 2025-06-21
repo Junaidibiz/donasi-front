@@ -5,7 +5,7 @@
     >
       <div>
         <a
-          href="#"
+          href="/"
           class="w-full focus:text-teal-500 hover:text-teal-500 justify-center inline-block text-center"
         >
           <img
