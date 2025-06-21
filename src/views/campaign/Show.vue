@@ -1,16 +1,16 @@
 <template>
   <div class="pb-20 pt-20">
-    <div class="container mx-auto grid grid-cols-1 p-5 sm:w-full md:w-5/12">
+    <div class="container mx-auto grid grid-cols-1 p-3 sm:w-full md:w-5/12">
       <div v-if="campaign.id">
         <!-- Check if campaign data is loaded -->
-        <div class="bg-white rounded-md shadow-md p-2 mb-5">
+        <div class="bg-white rounded-md shadow-md p-3 mb-5">
+          <!-- Campaign Image -->
           <img
-            class="w-full h-56 rounded object-cover"
+            class="rounded-md w-full h-56 object-cover"
             :src="campaign.imageComputed"
             width="384"
             height="512"
           />
-          <!-- Display campaign image -->
 
           <div class="p-3">
             <h3 class="text-xl font-semibold">{{ campaign.title }}</h3>
@@ -18,9 +18,18 @@
             <p class="text-xs text-gray-500 mt-2">{{ campaign.user.name }}</p>
             <!-- Display user name -->
 
-            <div v-if="campaign.sum_donation.length > 0">
-              <div v-for="donation in campaign.sum_donation" :key="donation.id">
-                <div class="relative pt-1 mt-3">
+            <div v-if="sumDonation.length > 0">
+              <div v-for="donation in sumDonation" :key="donation.id">
+                <p class="mt-4 text-base text-gray-500">
+                  <span class="font-bold text-blue-400"
+                    >Rp. {{ formatPrice(donation.total) }}
+                  </span>
+                  terkumpul dari
+                  <span class="font-bold"
+                    >Rp. {{ formatPrice(campaign.target_donation) }}</span
+                  >
+                </p>
+                <div class="relative pt-1 mt-2">
                   <div
                     class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-blue-200"
                   >
@@ -34,19 +43,17 @@
                     ></div>
                   </div>
                 </div>
-                <p class="text-xs text-gray-500">
-                  <span class="font-bold text-blue-400"
-                    >Rp. {{ formatPrice(donation.total) }}
-                  </span>
-                  terkumpul dari
-                  <span class="font-bold"
-                    >Rp. {{ formatPrice(campaign.target_donation) }}</span
-                  >
-                </p>
               </div>
             </div>
             <div v-else>
-              <div class="relative pt-1 mt-3">
+              <p class="mt-4 text-base text-gray-500">
+                <span class="font-bold text-blue-400">Rp. 0 </span> terkumpul
+                dari
+                <span class="font-bold"
+                  >Rp. {{ formatPrice(campaign.target_donation) }}</span
+                >
+              </p>
+              <div class="relative pt-1 mt-2">
                 <div
                   class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-blue-200"
                 >
@@ -58,13 +65,6 @@
                   ></div>
                 </div>
               </div>
-              <p class="text-xs text-gray-500">
-                <span class="font-bold text-blue-400">Rp. 0 </span> terkumpul
-                dari
-                <span class="font-bold"
-                  >Rp. {{ formatPrice(campaign.target_donation) }}</span
-                >
-              </p>
             </div>
 
             <div class="mt-3 text-xs">
@@ -86,18 +86,85 @@
           <FacebookLoader class="h-24" />
         </div>
       </div>
+
+      <!-- Fundraiser (Penggalang Dana) Section -->
+      <div v-if="user.id" class="bg-white rounded-md shadow-md p-3 mt-3 mb-5">
+        <div class="text-lg font-semibold">Penggalang Dana</div>
+        <div class="border-2 border-gray-200 mt-3 mb-2"></div>
+        <div class="bg-gray-200 p-3 rounded shadow-md mb-3">
+          <div class="grid grid-cols-10 gap-4 items-center">
+            <div class="col-span-2">
+              <img
+                :src="user.avatarComputed"
+                class="w-15 h-15 rounded-full shadow object-cover"
+              />
+            </div>
+            <div class="col-span-8 text-lg font-bold">
+              {{ user.name }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Story (Cerita) Section -->
+      <div
+        v-if="campaign.description"
+        class="bg-white rounded-md shadow-md p-3 mt-3 mb-5"
+      >
+        <div class="text-lg font-semibold">Cerita</div>
+        <div class="border-2 border-gray-200 mt-3 mb-2"></div>
+        <div class="text-sm text-gray-600" v-html="campaign.description"></div>
+      </div>
+
+      <!-- Donations List Section -->
+      <div
+        v-if="donations && donations.length > 0"
+        class="bg-white rounded-md shadow-md p-3 mt-3 mb-5"
+      >
+        <div class="text-lg font-semibold">Donasi ({{ donations.length }})</div>
+        <div class="border-2 border-gray-200 mt-3 mb-2"></div>
+        <div
+          v-for="donation in donations"
+          :key="donation.id"
+          class="bg-gray-200 p-3 rounded shadow-md mb-3"
+        >
+          <div class="grid grid-cols-10 gap-4">
+            <div class="col-span-1">
+              <img
+                :src="donation.donatur.avatarComputed"
+                class="w-15 h-15 rounded-full object-cover"
+              />
+            </div>
+            <div class="col-span-9 mt-1">
+              <div class="text-base font-bold">
+                {{ donation.donatur.name }}
+              </div>
+              <div class="text-sm mt-2 text-gray-500">
+                Berdonasi sebesar
+                <span class="font-bold"
+                  >Rp. {{ formatPrice(donation.amount) }}</span
+                >
+              </div>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 gap-4 mt-3">
+            <div class="text-gray-600 text-sm">
+              {{ donation.pray }}
+            </div>
+            <div class="text-gray-500 text-sm italic text-right">
+              {{ donation.created_at }}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-//hook vue
-import { onMounted, computed } from "vue";
-//hook vuex
+import { computed, onMounted } from "vue";
 import { useStore } from "vuex";
-//hook vue router
-import { useRoute } from "vue-router"; // Import useRoute to get slug from URL
-// vue content loader
+import { useRoute } from "vue-router";
 import { FacebookLoader } from "vue-content-loader";
 
 export default {
@@ -106,28 +173,19 @@ export default {
     FacebookLoader,
   },
   setup() {
-    //store vuex
-    const store = useStore();
-    //get current route to access params
     const route = useRoute();
+    const store = useStore();
 
-    //onMounted will run "getDetailCampaign" action in "campaign" module
     onMounted(() => {
-      // Dispatch action to get campaign details using the slug from the URL
       store.dispatch("campaign/getDetailCampaign", route.params.slug);
     });
 
-    // Get campaign data from Vuex state
     const campaign = computed(() => {
-      // KOREKSI: Map data campaign untuk menambahkan properti imageComputed (sama seperti di Home.vue)
-      // Pastikan store.state.campaign.campaign itu objek, bukan array, karena ini detail
       const fetchedCampaign = store.state.campaign.campaign;
       if (!fetchedCampaign || !fetchedCampaign.id) {
-        // Return empty object if data not fetched yet
         return {};
       }
-
-      const LARAVEL_BASE_URL = "http://donasi-dm.test"; // <-- SESUAIKAN DENGAN BASE URL DOMAIN BACKEND ANDA
+      const LARAVEL_BASE_URL = "http://donasi-dm.test"; // <-- ADJUST THIS
 
       let imageUrl;
       if (
@@ -140,12 +198,10 @@ export default {
         if (fetchedCampaign.image.startsWith("/storage")) {
           imageUrl = `${LARAVEL_BASE_URL}${fetchedCampaign.image}`;
         } else {
-          // Assume path in database is relative to public/storage/campaigns/ (e.g. 'campaigns/image.png')
-          imageUrl = `${LARAVEL_BASE_URL}/storage/campaigns/${fetchedCampaign.image}`; // <-- Adjust folder if different
+          imageUrl = `${LARAVEL_BASE_URL}/storage/campaigns/${fetchedCampaign.image}`;
         }
       } else {
-        // Fallback if no image from backend
-        imageUrl = "https://placehold.co/384x512/E0E0E0/333333?text=No+Image"; // Placeholder image
+        imageUrl = "https://placehold.co/384x512/E0E0E0/333333?text=No+Image";
       }
 
       return {
@@ -154,8 +210,87 @@ export default {
       };
     });
 
+    const user = computed(() => {
+      const fetchedUser = store.state.campaign.user;
+      if (!fetchedUser || !fetchedUser.id) {
+        return {};
+      }
+      const LARAVEL_STORAGE_BASE_URL_AVATAR =
+        "http://donasi-dm.test/storage/donaturs/"; // ADJUST THIS
+      let avatarUrl;
+      if (
+        fetchedUser.avatar &&
+        (fetchedUser.avatar.startsWith("http://") ||
+          fetchedUser.avatar.startsWith("https://"))
+      ) {
+        avatarUrl = fetchedUser.avatar;
+      } else if (fetchedUser.avatar) {
+        avatarUrl = `${LARAVEL_STORAGE_BASE_URL_AVATAR}${fetchedUser.avatar}`;
+      } else {
+        avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+          fetchedUser.name || "User"
+        )}&background=random&color=fff&size=128`;
+      }
+      return {
+        ...fetchedUser,
+        avatarComputed: avatarUrl,
+      };
+    });
+
+    const sumDonation = computed(() => {
+      return store.state.campaign.sumDonation;
+    });
+
+    const donations = computed(() => {
+      // Check if store.state.campaign.donations is an array, if not, return empty array
+      const fetchedDonations = Array.isArray(store.state.campaign.donations)
+        ? store.state.campaign.donations
+        : [];
+
+      return fetchedDonations.map((donation) => {
+        // Ensure donatur exists
+        if (!donation.donatur) {
+          return {
+            ...donation,
+            donatur: {
+              avatarComputed: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                "Anonim"
+              )}&background=random&color=fff&size=128`,
+            },
+          };
+        }
+
+        const LARAVEL_STORAGE_BASE_URL_DONATUR_AVATAR =
+          "http://donasi-dm.test/storage/donaturs/"; // ADJUST THIS
+        let donaturAvatarUrl;
+        if (
+          donation.donatur.avatar &&
+          (donation.donatur.avatar.startsWith("http://") ||
+            donation.donatur.avatar.startsWith("https://"))
+        ) {
+          donaturAvatarUrl = donation.donatur.avatar;
+        } else if (donation.donatur.avatar) {
+          donaturAvatarUrl = `${LARAVEL_STORAGE_BASE_URL_DONATUR_AVATAR}${donation.donatur.avatar}`;
+        } else {
+          donaturAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            donation.donatur.name || "Donatur"
+          )}&background=random&color=fff&size=128`;
+        }
+        return {
+          ...donation,
+          donatur: {
+            ...donation.donatur,
+            avatarComputed: donaturAvatarUrl,
+          },
+        };
+      });
+    });
+
     return {
-      campaign, // return campaign state
+      campaign,
+      user,
+      sumDonation,
+      donations,
     };
   },
 };

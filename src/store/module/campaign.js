@@ -7,13 +7,19 @@ const campaign = {
 
   //state
   state: {
-    //index campaigns
+    //index campaigns (for homepage and campaign index page)
     campaigns: [],
     //loadmore
     nextExists: false,
     nextPage: 0,
-    // --- NEW STATE FOR SINGLE CAMPAIGN DETAIL ---
-    campaign: {}, // Object to store single campaign details
+    //detail campaign (single campaign object for show page)
+    campaign: {},
+    //detail user (the fundraiser/user who created the campaign)
+    user: {}, // <-- NEW STATE FOR FUNDRAISER USER
+    //total donation (sum of donations for the campaign)
+    sumDonation: [], // <-- NEW STATE FOR SUM OF DONATIONS
+    //data donations (list of individual donations for the campaign)
+    donations: [], // <-- NEW STATE FOR LIST OF DONATIONS
   },
 
   //mutations
@@ -36,16 +42,28 @@ const campaign = {
         state.campaigns.push(row);
       });
     },
-    // --- NEW MUTATION FOR SINGLE CAMPAIGN DETAIL ---
+    //set state campaign with data from response (single campaign)
     SET_CAMPAIGN(state, data) {
-      // Set state 'campaign' with detail data
       state.campaign = data;
+    },
+    // --- NEW MUTATIONS FOR CAMPAIGN DETAIL ---
+    //set state donatur with data from response (the fundraiser)
+    DETAIL_USER(state, data) {
+      state.user = data;
+    },
+    //set state sumDonation with data from response
+    DETAIL_SUMDONATION(state, data) {
+      state.sumDonation = data;
+    },
+    //set state donations with data from response (individual donations list)
+    SET_DONATIONS(state, data) {
+      state.donations = data;
     },
   },
 
   //actions
   actions: {
-    //action getCampaign
+    //action getCampaign (for index and homepage)
     getCampaign({ commit }) {
       Api.get("/campaign")
         .then((response) => {
@@ -61,7 +79,7 @@ const campaign = {
           console.log(error);
         });
     },
-    //action getLoadMore
+    //action getLoadMore (for index and homepage)
     getLoadMore({ commit }, nextPage) {
       Api.get(`/campaign?page=${nextPage}`)
         .then((response) => {
@@ -77,29 +95,21 @@ const campaign = {
           console.log(error);
         });
     },
-    // --- NEW ACTION FOR SINGLE CAMPAIGN DETAIL ---
-    // Action to get a specific campaign's details by slug
+    //action getDetailCampaign (for show page)
     getDetailCampaign({ commit }, slug) {
-      Api.get(`/campaign/${slug}`) // Backend API endpoint for campaign detail
+      Api.get(`/campaign/${slug}`)
         .then((response) => {
-          commit("SET_CAMPAIGN", response.data.data); // Commit detail campaign data
+          commit("SET_CAMPAIGN", response.data.data); // Commit campaign detail
+          commit("DETAIL_USER", response.data.data.user); // Commit fundraiser user detail
+          commit("DETAIL_SUMDONATION", response.data.data.sum_donation); // Commit sum donation
+          commit("SET_DONATIONS", response.data.data.donations); // Commit list of donations
         })
         .catch((error) => {
           console.log(error);
-          // Optional: handle 404 (not found) for specific campaign
         });
     },
   },
   //getters
-  getters: {
-    // Example: get all campaigns from state
-    getAllCampaigns(state) {
-      return state.campaigns;
-    },
-    // Example: get the detailed campaign object
-    getDetailedCampaign(state) {
-      return state.campaign;
-    },
-  },
+  getters: {},
 };
 export default campaign;
