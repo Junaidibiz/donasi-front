@@ -1,15 +1,10 @@
-//import vue router
+// Import vue router
 import { createRouter, createWebHistory } from "vue-router";
-//import store vuex
+// Import store vuex
 import store from "../store";
 
-//define a routes
+// Define a routes
 const routes = [
-  {
-    path: "/", // Homepage route
-    name: "home",
-    component: () => import(/* webpackChunkName: "home" */ "../views/Home.vue"),
-  },
   {
     path: "/register",
     name: "register",
@@ -30,7 +25,7 @@ const routes = [
         /* webpackChunkName: "dashboard" */ "../views/dashboard/Index.vue"
       ),
     meta: {
-      //chek is loggedIn
+      // Check if loggedIn
       requiresAuth: true,
     },
   },
@@ -42,7 +37,7 @@ const routes = [
         /* webpackChunkName: "donationIndex" */ "../views/donation/Index.vue"
       ),
     meta: {
-      //chek is loggedIn
+      // Check if loggedIn
       requiresAuth: true,
     },
   },
@@ -52,34 +47,40 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "profile" */ "../views/profile/Index.vue"),
     meta: {
-      //chek is loggedIn
+      // Check if loggedIn
       requiresAuth: true,
     },
   },
   {
-    path: "/profile/password", // <-- ROUTE BARU UNTUK UPDATE PASSWORD
+    path: "/profile/password",
     name: "profile.password",
     component: () =>
       import(
         /* webpackChunkName: "profilePassword" */ "../views/profile/Password.vue"
       ),
     meta: {
-      //chek is loggedIn
+      // Check if loggedIn
       requiresAuth: true,
     },
   },
+  {
+    path: "/", // <-- NEW ROUTE FOR HOMEPAGE
+    name: "home",
+    component: () =>
+      import(/* webpackChunkName: "home" */ "../views/home/Index.vue"), // <-- Points to the new homepage component
+  },
 ];
 
-//create router
+// Create router
 const router = createRouter({
   history: createWebHistory(),
-  routes, // <-- routes,
+  routes, // <-- routes
 });
 
-//define route for handle authentication
+// Define route for handle authentication
 router.beforeEach((to, from, next) => {
   if (to.matched.some((record) => record.meta.requiresAuth)) {
-    //cek nilai dari getters isLoggedIn di module auth
+    // Check "isLoggedIn" getter value in "auth" module
     if (store.getters["auth/isLoggedIn"]) {
       next();
       return;
