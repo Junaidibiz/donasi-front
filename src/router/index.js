@@ -66,32 +66,37 @@ const routes = [
       import(/* webpackChunkName: "home" */ "../views/home/Index.vue"),
   },
   {
-    path: "/campaign/:slug",
+    path: "/category",
+    name: "category.index",
+    component: () =>
+      import(
+        /* webpackChunkName: "categoryIndex" */ "../views/category/Index.vue"
+      ),
+  },
+  {
+    path: "/category/:slug",
+    name: "category.show",
+    component: () =>
+      import(
+        /* webpackChunkName: "categoryShow" */ "../views/category/Show.vue"
+      ),
+  },
+  // --- NEW CAMPAIGN ROUTES ---
+  {
+    path: "/campaign", // Route for campaign index page
+    name: "campaign.index",
+    component: () =>
+      import(
+        /* webpackChunkName: "campaignIndex" */ "../views/campaign/Index.vue"
+      ),
+  },
+  {
+    path: "/campaign/:slug", // Route for campaign detail page
     name: "campaign.show",
     component: () =>
       import(
         /* webpackChunkName: "campaignShow" */ "../views/campaign/Show.vue"
       ),
-  },
-  // --- NEW ROUTE FOR CATEGORY INDEX ---
-  {
-    path: "/category", // The path you are trying to access
-    name: "category.index", // The name of the route
-    component: () =>
-      import(
-        /* webpackChunkName: "categoryIndex" */ "../views/category/Index.vue"
-      ),
-    // meta: { requiresAuth: false } // Categories index usually public, adjust if needed
-  },
-  // --- NEW ROUTE FOR CATEGORY DETAIL ---
-  {
-    path: "/category/:slug", // Dynamic segment for category slug
-    name: "category.show", // The name for category detail
-    component: () =>
-      import(
-        /* webpackChunkName: "categoryDetail" */ "../views/category/Show.vue"
-      ),
-    // meta: { requiresAuth: false } // Category detail usually public
   },
 ];
 

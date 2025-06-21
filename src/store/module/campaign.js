@@ -8,10 +8,12 @@ const campaign = {
   //state
   state: {
     //index campaigns
-    campaigns: [], // <-- Array to store campaign data
+    campaigns: [],
     //loadmore
-    nextExists: false, // <-- Indicates if there's a next page
-    nextPage: 0, // <-- Next page number for pagination
+    nextExists: false,
+    nextPage: 0,
+    // --- NEW STATE FOR SINGLE CAMPAIGN DETAIL ---
+    campaign: {}, // Object to store single campaign details
   },
 
   //mutations
@@ -31,8 +33,13 @@ const campaign = {
     //set state campaigns with data from response loadmore
     SET_LOADMORE(state, data) {
       data.forEach((row) => {
-        state.campaigns.push(row); // Add new data to existing campaigns array
+        state.campaigns.push(row);
       });
+    },
+    // --- NEW MUTATION FOR SINGLE CAMPAIGN DETAIL ---
+    SET_CAMPAIGN(state, data) {
+      // Set state 'campaign' with detail data
+      state.campaign = data;
     },
   },
 
@@ -40,40 +47,29 @@ const campaign = {
   actions: {
     //action getCampaign
     getCampaign({ commit }) {
-      //get campaign data from server
-      Api.get("/campaign") // <-- Backend API endpoint for campaigns
+      Api.get("/campaign")
         .then((response) => {
-          //commit to SET_CAMPAIGNS mutation with response data
-          commit("SET_CAMPAIGNS", response.data.data.data); // Assuming pagination data.data.data
+          commit("SET_CAMPAIGNS", response.data.data.data);
           if (response.data.data.current_page < response.data.data.last_page) {
-            //commit to SET_NEXTEXISTS mutation with true
             commit("SET_NEXTEXISTS", true);
-            //commit to SET_NEXTPAGE mutation with current page + 1
             commit("SET_NEXTPAGE", response.data.data.current_page + 1);
           } else {
-            //commit to SET_NEXTEXISTS mutation with false
             commit("SET_NEXTEXISTS", false);
           }
         })
         .catch((error) => {
           console.log(error);
-          // Optional: Handle network errors or 401 Unauthorized
         });
     },
     //action getLoadMore
     getLoadMore({ commit }, nextPage) {
-      //get campaign data with page parameter from server
-      Api.get(`/campaign?page=${nextPage}`) // <-- Backend API endpoint with page parameter
+      Api.get(`/campaign?page=${nextPage}`)
         .then((response) => {
-          //commit to SET_LOADMORE mutation with response data
           commit("SET_LOADMORE", response.data.data.data);
           if (response.data.data.current_page < response.data.data.last_page) {
-            //commit to SET_NEXTEXISTS mutation with true
             commit("SET_NEXTEXISTS", true);
-            //commit to SET_NEXTPAGE mutation with current page + 1
             commit("SET_NEXTPAGE", response.data.data.current_page + 1);
           } else {
-            //commit to SET_NEXTEXISTS mutation with false
             commit("SET_NEXTEXISTS", false);
           }
         })
@@ -81,8 +77,29 @@ const campaign = {
           console.log(error);
         });
     },
+    // --- NEW ACTION FOR SINGLE CAMPAIGN DETAIL ---
+    // Action to get a specific campaign's details by slug
+    getDetailCampaign({ commit }, slug) {
+      Api.get(`/campaign/${slug}`) // Backend API endpoint for campaign detail
+        .then((response) => {
+          commit("SET_CAMPAIGN", response.data.data); // Commit detail campaign data
+        })
+        .catch((error) => {
+          console.log(error);
+          // Optional: handle 404 (not found) for specific campaign
+        });
+    },
   },
   //getters
-  getters: {},
+  getters: {
+    // Example: get all campaigns from state
+    getAllCampaigns(state) {
+      return state.campaigns;
+    },
+    // Example: get the detailed campaign object
+    getDetailedCampaign(state) {
+      return state.campaign;
+    },
+  },
 };
 export default campaign;

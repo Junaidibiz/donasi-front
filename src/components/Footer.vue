@@ -5,7 +5,6 @@
         class="container mx-auto grid grid-cols-4 gap-4 p-2 sm:w-full md:w-5/12"
       >
         <div>
-          <!-- CHANGE TO router-link -->
           <router-link
             :to="{ name: 'home' }"
             class="w-full focus:text-teal-500 hover:text-teal-500 justify-center inline-block text-center"
@@ -34,8 +33,9 @@
           </router-link>
         </div>
         <div>
-          <a
-            href="#"
+          <!-- CHANGE TO router-link for Campaign index -->
+          <router-link
+            :to="{ name: 'campaign.index' }"
             class="w-full focus:text-teal-500 hover:text-teal-500 justify-center inline-block text-center"
           >
             <img
@@ -45,7 +45,7 @@
               src="../assets/images/flag.png"
             />
             <span class="tab tab-kategori block text-xs">Campaign</span>
-          </a>
+          </router-link>
         </div>
         <div>
           <router-link

@@ -29,6 +29,7 @@
                   <div
                     class="w-full pt-6 p-5 md:p-3 text-center md:text-left space-y-4"
                   >
+                    <!-- CHANGE TO router-link for campaign detail -->
                     <router-link
                       :to="{
                         name: 'campaign.show',
@@ -111,9 +112,7 @@
           </div>
         </div>
       </div>
-      <!-- Pastikan div v-else ini langsung setelah div v-if sebelumnya tanpa ada spasi/newline/komentar di antaranya -->
       <div v-else>
-        <!-- Loading block for campaigns -->
         <div
           v-for="index in 2"
           :key="index"
@@ -122,7 +121,6 @@
           <FacebookLoader class="h-24" />
         </div>
       </div>
-      <!-- Load More button -->
       <div class="text-center mt-4 mb-4" v-show="nextExists">
         <a
           @click="loadMore"
@@ -158,7 +156,7 @@ export default {
 
     const campaigns = computed(() => {
       return store.state.campaign.campaigns.map((campaign) => {
-        const LARAVEL_BASE_URL = "http://donasi-dm.test"; // <-- SESUAIKAN DENGAN BASE URL DOMAIN BACKEND ANDA
+        const LARAVEL_BASE_URL = "http://donasi-dm.test"; // <-- ADJUST THIS
 
         let imageUrl;
         if (

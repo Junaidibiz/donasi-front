@@ -9,7 +9,6 @@
           }}</strong>
         </h3>
         <div class="mt-5">
-          <!-- Removed grid-cols-4 from here -->
           <div
             v-for="campaign in campaignCategory"
             :key="campaign.id"
@@ -24,10 +23,10 @@
                     width="384"
                     height="512"
                   />
-                  <!-- Use campaign.imageComputed -->
                   <div
                     class="pt-6 p-5 md:p-3 text-center md:text-left space-y-4"
                   >
+                    <!-- CHANGE TO router-link for campaign detail -->
                     <router-link
                       :to="{
                         name: 'campaign.show',
@@ -122,36 +121,27 @@
 </template>
 
 <script>
-//hook vue
 import { onMounted, computed } from "vue";
-//hook vuex
 import { useStore } from "vuex";
-//hook vue router
-import { useRoute } from "vue-router"; // <-- Import useRoute
+import { useRoute } from "vue-router";
 
 export default {
   name: "CategoryShowComponent",
   setup() {
-    //store vuex
     const store = useStore();
-    //const route
-    const route = useRoute(); // <-- Inisialisasi useRoute
+    const route = useRoute();
 
-    //onMounted will run "getDetailCategory" action in "category" module
     onMounted(() => {
-      store.dispatch("category/getDetailCategory", route.params.slug); // <-- Dispatch action with slug
+      store.dispatch("category/getDetailCategory", route.params.slug);
     });
 
-    //used to get state "category" in "category" module
     const category = computed(() => {
       return store.state.category.category;
     });
 
-    //used to get campaign data in "campaignCategory" state in "category" module
     const campaignCategory = computed(() => {
-      // KOREKSI: Map data campaignCategory untuk menambahkan properti imageComputed (sama seperti di Home.vue)
       return store.state.category.campaignCategory.map((campaign) => {
-        const LARAVEL_BASE_URL = "http://donasi-dm.test"; // <-- SESUAIKAN DENGAN BASE URL DOMAIN BACKEND ANDA
+        const LARAVEL_BASE_URL = "http://donasi-dm.test"; // ADJUST THIS
 
         let imageUrl;
         if (
@@ -163,8 +153,7 @@ export default {
           if (campaign.image.startsWith("/storage")) {
             imageUrl = `${LARAVEL_BASE_URL}${campaign.image}`;
           } else {
-            // Assume path in database is relative to public/storage/campaigns/ (e.g. 'campaigns/image.png')
-            imageUrl = `${LARAVEL_BASE_URL}/storage/campaigns/${campaign.image}`; // <-- Adjust folder if different
+            imageUrl = `${LARAVEL_BASE_URL}/storage/campaigns/${campaign.image}`;
           }
         }
 
@@ -176,11 +165,13 @@ export default {
     });
 
     return {
-      category, // <-- state category
-      campaignCategory, // <-- state campaignCategory
+      category,
+      campaignCategory,
     };
   },
 };
 </script>
 
-<style></style>
+<style>
+/* You can add custom styles here if needed, or leave it empty if fully using Tailwind */
+</style>
