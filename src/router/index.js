@@ -81,9 +81,8 @@ const routes = [
         /* webpackChunkName: "categoryShow" */ "../views/category/Show.vue"
       ),
   },
-  // --- NEW CAMPAIGN ROUTES ---
   {
-    path: "/campaign", // Route for campaign index page
+    path: "/campaign",
     name: "campaign.index",
     component: () =>
       import(
@@ -91,19 +90,30 @@ const routes = [
       ),
   },
   {
-    path: "/campaign/:slug", // Route for campaign detail page
+    path: "/campaign/:slug",
     name: "campaign.show",
     component: () =>
       import(
         /* webpackChunkName: "campaignShow" */ "../views/campaign/Show.vue"
       ),
   },
+  {
+    path: "/donation/create/:slug", // <-- NEW ROUTE FOR CREATE DONATION
+    name: "donation.create",
+    component: () =>
+      import(
+        /* webpackChunkName: "donationCreate" */ "../views/donation/Create.vue"
+      ),
+    meta: {
+      requiresAuth: true, // <-- Requires authentication
+    },
+  },
 ];
 
 // Create router
 const router = createRouter({
   history: createWebHistory(),
-  routes,
+  routes, // <-- routes
 });
 
 // Define route for handle authentication
