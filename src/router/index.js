@@ -47,13 +47,25 @@ const routes = [
     },
   },
   {
-    path: "/profile", // <-- ROUTE BARU UNTUK PROFILE
+    path: "/profile",
     name: "profile",
     component: () =>
       import(/* webpackChunkName: "profile" */ "../views/profile/Index.vue"),
     meta: {
       //chek is loggedIn
-      requiresAuth: true, // <-- Memerlukan autentikasi
+      requiresAuth: true,
+    },
+  },
+  {
+    path: "/profile/password", // <-- ROUTE BARU UNTUK UPDATE PASSWORD
+    name: "profile.password",
+    component: () =>
+      import(
+        /* webpackChunkName: "profilePassword" */ "../views/profile/Password.vue"
+      ),
+    meta: {
+      //chek is loggedIn
+      requiresAuth: true,
     },
   },
 ];

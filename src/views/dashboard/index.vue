@@ -2,31 +2,39 @@
   <div class="pb-20 pt-20">
     <div class="container mx-auto grid grid-cols-1 p-3 sm:w-full md:w-5/12">
       <div class="bg-white p-5 rounded-md shadow-md mb-5">
+        <!-- Bagian atas: Avatar, Nama, Edit Profile -->
+        <!-- Menggunakan flexbox untuk layar kecil dan grid untuk layar medium ke atas -->
         <div
           class="flex items-center space-x-4 md:grid md:grid-cols-12 md:gap-4"
         >
+          <!-- Kolom Avatar: ukuran tetap 96x96px, tidak menyusut -->
           <div class="col-span-1 md:col-span-2 w-24 h-24 flex-shrink-0">
+            <!-- Gambar avatar mengisi penuh div parent yang sudah berukuran tetap -->
             <img
               :src="avatarUrlComputed"
               class="rounded-full w-full h-full object-cover"
               alt="User Avatar"
             />
           </div>
-          <div class="pl-8 md:pl col-span-1 md:col-span-6">
+          <!-- Kolom Nama dan Tombol Edit: tanpa padding-left karena jarak diatur oleh space-x-4/gap-4 -->
+          <div class="pl-8 col-span-1 md:col-span-6">
             <div class="font-bold text-base">
               {{ user.name }}
             </div>
             <div class="mt-3">
-              <a
-                href="#"
-                class="bg-gray-700 py-1 px-3 rounded shadow-md text-white uppercase"
-                >Edit Profile</a
+              <!-- Update Edit Profile Link to router-link -->
+              <router-link
+                :to="{ name: 'profile' }"
+                class="bg-gray-700 py-1 px-3 rounded shadow-md text-white uppercase block text-center"
+                >Edit Profile</router-link
               >
             </div>
           </div>
         </div>
+        <!-- Garis pemisah -->
         <div class="border-2 border-gray-200 mt-3 mb-2"></div>
 
+        <!-- Bagian Menu Utama -->
         <router-link :to="{ name: 'donation.index' }" class="block">
           <div
             class="grid grid-cols-5 gap-4 bg-gray-300 p-3 rounded-md shadow-sm mb-3"
@@ -47,7 +55,8 @@
           </div>
         </router-link>
 
-        <a href="#">
+        <!-- Ubah Password Link -->
+        <router-link :to="{ name: 'profile.password' }" class="block">
           <div
             class="grid grid-cols-5 gap-4 bg-gray-300 p-3 rounded-md shadow-sm mb-3"
           >
@@ -55,8 +64,9 @@
               <i class="fa fa-key" aria-hidden="true"></i> Ubah Password
             </div>
           </div>
-        </a>
+        </router-link>
 
+        <!-- Tombol Logout -->
         <a @click="logout" style="cursor: pointer">
           <div
             class="grid grid-cols-5 gap-4 bg-gray-300 p-3 rounded-md shadow-sm mb-3"
@@ -92,27 +102,21 @@ export default {
       return store.state.auth.user;
     });
 
-    // Computed property untuk URL avatar
     const avatarUrlComputed = computed(() => {
       if (user.value && user.value.name) {
         if (user.value.avatar) {
-          // !!! PENTING: SESUAIKAN BASE URL STORAGE LARAVEL ANDA DI SINI !!!
-          // Contoh: 'http://localhost:8000/storage/'
           const LARAVEL_STORAGE_BASE_URL =
-            "http://donasi-dm.test/storage/donaturs/"; // <-- SESUAIKAN INI
+            "http://donasi-dm.test/storage/donaturs/"; // <-- ADJUST THIS
 
-          // Periksa apakah avatar sudah berupa URL lengkap atau masih hanya nama file
           if (
             user.value.avatar.startsWith("http://") ||
             user.value.avatar.startsWith("https://")
           ) {
-            return user.value.avatar; // Jika sudah URL lengkap, langsung pakai
+            return user.value.avatar;
           } else {
-            // Jika hanya nama file, tambahkan base URL storage
             return `${LARAVEL_STORAGE_BASE_URL}${user.value.avatar}`;
           }
         } else {
-          // Fallback ke UI-Avatars.com jika properti avatar dari backend null atau kosong
           return `https://ui-avatars.com/api/?name=${encodeURIComponent(
             user.value.name
           )}&background=random&color=fff&size=128`;
@@ -121,7 +125,6 @@ export default {
       return "";
     });
 
-    // Fungsi logout
     function logout() {
       store.dispatch("auth/logout").then(() => {
         router.push({
@@ -141,5 +144,5 @@ export default {
 </script>
 
 <style>
-/* Anda dapat menambahkan gaya khusus di sini jika diperlukan, atau biarkan kosong jika sepenuhnya menggunakan Tailwind */
+/* You can add custom styles here if needed, or leave it empty if fully using Tailwind */
 </style>

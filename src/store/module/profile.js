@@ -31,6 +31,7 @@ const profile = {
         })
         .catch((error) => {
           console.log(error);
+          // Optional: Handle 401 Unauthorized jika diperlukan (redirect ke login, dll.)
         });
     },
     //action updateProfile
@@ -49,22 +50,26 @@ const profile = {
           });
       });
     },
-    // --- ACTION BARU UNTUK MENGHAPUS AVATAR ---
-    removeUserAvatar({ commit }) {
-      // Action baru untuk menghapus avatar
+    // --- ACTION BARU UNTUK UPDATE PASSWORD ---
+    updatePassword({ commit }, user) {
+      // <-- Action baru untuk update password [cite: Langkah 2 - Edit Module Profile Vuex]
       return new Promise((resolve, reject) => {
         const token = localStorage.getItem("token");
         Api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-        // Panggil endpoint backend untuk menghapus avatar
-        Api.post("/profile/remove-avatar") // Memanggil endpoint backend
+        // Endpoint backend untuk update password
+        Api.post("/profile/password", {
+          // <-- Endpoint API Laravel untuk update password [cite: Langkah 2 - Edit Module Profile Vuex]
+          password: user.password,
+          password_confirmation: user.password_confirmation,
+        })
           .then((response) => {
-            commit("SET_PROFILE", response.data.data); // Update state profile menjadi null
+            // Update profile state (jika backend mengembalikan data user setelah update password)
+            commit("SET_PROFILE", response.data.data); // <-- Commit SET_PROFILE (opsional, tergantung backend) [cite: Langkah 2 - Edit Module Profile Vuex]
             resolve(response);
           })
           .catch((error) => {
-            console.error("Error menghapus avatar di backend:", error);
-            reject(error.response.data);
+            reject(error.response.data); // <-- Reject promise dengan error [cite: Langkah 2 - Edit Module Profile Vuex]
           });
       });
     },
