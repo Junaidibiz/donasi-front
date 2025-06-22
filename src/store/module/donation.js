@@ -18,7 +18,14 @@ const donation = {
   mutations: {
     //set state donations dengan data dari response
     SET_DONATIONS(state, donations) {
-      state.donations = donations;
+      // Memastikan setiap donasi memiliki objek campaign yang valid
+      // Ini akan mencegah error 'campaign' is undefined di template
+      state.donations = donations.map((item) => {
+        return {
+          ...item,
+          campaign: item.campaign || {}, // Jika item.campaign undefined/null, set ke objek kosong
+        };
+      });
     },
 
     //set state nextExists
@@ -33,8 +40,12 @@ const donation = {
 
     //set state "donations" dengan data dari response loadmore
     SET_LOADMORE(state, data) {
+      // Memastikan setiap donasi yang di-loadmore juga memiliki objek campaign yang valid
       data.forEach((row) => {
-        state.donations.push(row);
+        state.donations.push({
+          ...row,
+          campaign: row.campaign || {}, // Jika row.campaign undefined/null, set ke objek kosong
+        });
       });
     },
   },
@@ -56,13 +67,9 @@ const donation = {
           commit("SET_DONATIONS", response.data.data.data);
 
           if (response.data.data.current_page < response.data.data.last_page) {
-            //commit ke mutation SET_NEXTEXISTS dengan true
             commit("SET_NEXTEXISTS", true);
-
-            //commit ke mutation SET_NEXTPAGE dengan current page + 1
             commit("SET_NEXTPAGE", response.data.data.current_page + 1);
           } else {
-            //commit ke mutation SET_NEXTEXISTS dengan false
             commit("SET_NEXTEXISTS", false);
           }
         })
@@ -87,13 +94,9 @@ const donation = {
           commit("SET_LOADMORE", response.data.data.data);
 
           if (response.data.data.current_page < response.data.data.last_page) {
-            //commit ke mutation SET_NEXTEXISTS dengan true
             commit("SET_NEXTEXISTS", true);
-
-            //commit ke mutation SET_NEXTPAGE dengan current page + 1
             commit("SET_NEXTPAGE", response.data.data.current_page + 1);
           } else {
-            //commit ke mutation SET_NEXTEXISTS dengan false
             commit("SET_NEXTEXISTS", false);
           }
         })
@@ -103,7 +106,7 @@ const donation = {
         });
     },
 
-    //storeDonation (AKSI BARU)
+    //storeDonation
     storeDonation({ commit }, data) {
       //define callback promise
       return new Promise((resolve, reject) => {

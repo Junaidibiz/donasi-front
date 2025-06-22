@@ -38,75 +38,99 @@
 </template>
 
 <script>
-//hook vue
+// Vue hooks
 import { reactive } from "vue";
-//hook vuex
+// Vuex hook
 import { useStore } from "vuex";
-//hook vue router
+// Vue Router hooks
 import { useRoute, useRouter } from "vue-router";
-//hook Toast
+// Toast hook
 import { useToast } from "vue-toastification";
 
 export default {
   name: "DonationCreateComponent",
   setup() {
-    //store vuex
+    // Initialize Vuex store
     const store = useStore();
-
-    //route
+    // Initialize Vue Router route
     const route = useRoute();
-
-    //router
+    // Initialize Vue Router router
     const router = useRouter();
-
-    //toast
+    // Initialize Vue Toastification
     const toast = useToast();
 
-    //state donation
+    // Reactive state for donation form data
     const donation = reactive({
-      amount: 0,
-      pray: "",
-      campaignSlug: route.params.slug,
+      amount: 0, // Donation amount
+      pray: "", // Prayer/message from donor
+      campaignSlug: route.params.slug, // Campaign slug from route parameters
     });
 
-    //method store donation
+    /**
+     * Function to store the donation.
+     * This function is triggered when the "LANJUT PEMBAYARAN" button is clicked.
+     */
     function storeDonation() {
-      //check minimal donasi
+      // Frontend validation: check minimum donation amount
       if (donation.amount < 10000) {
         toast.error("Donasi Minimal Rp. 10.000");
-        return false;
+        return false; // Prevent further execution
       }
 
+      // Prepare data to be sent to the backend.
+      // Ensure field names match backend expectations (e.g., snake_case for Laravel).
+      const dataToSend = {
+        amount: donation.amount,
+        pray: donation.pray,
+        campaign_slug: donation.campaignSlug, // Corrected: use snake_case for backend
+      };
+
+      // Dispatch the 'storeDonation' action from the 'donation' Vuex module
       store
-        .dispatch("donation/storeDonation", donation)
+        .dispatch("donation/storeDonation", dataToSend)
         .then(() => {
+          // On successful donation creation
           toast.success("Transaksi Berhasil Dibuat!");
-          //redirect ke dashboard
+          // Redirect to the donation index page
           router.push({ name: "donation.index" });
         })
         .catch((error) => {
-          console.log(error);
+          // On error during donation creation (e.g., validation errors from backend)
+          console.error("Error storing donation:", error);
+
+          // Display specific validation errors from backend if available
           if (error.amount) {
-            // Jika ada validasi amount dari backend
             toast.error(`${error.amount[0]}`);
           }
           if (error.pray) {
-            // Jika ada validasi pray dari backend
             toast.error(`${error.pray[0]}`);
           }
-          if (error.message) {
-            // Pesan error umum dari backend
+          if (error.campaign_slug) {
+            // Handle specific error for campaign_slug
+            toast.error(`${error.campaign_slug[0]}`);
+          }
+
+          // Display general error message from backend if no specific field errors
+          if (
+            error.message &&
+            !error.amount &&
+            !error.pray &&
+            !error.campaign_slug
+          ) {
             toast.error(`${error.message}`);
           }
         });
     }
 
+    // Return reactive state and methods to be used in the template
     return {
-      donation,
-      storeDonation,
+      donation, // Reactive state for form inputs
+      storeDonation, // Method to handle form submission
     };
   },
 };
 </script>
 
-<style></style>
+<style>
+/* You can add custom styles here if needed, or leave it empty if fully using Tailwind */
+</style>
