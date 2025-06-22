@@ -14,7 +14,6 @@
               class="grid grid-cols-4 gap-4 mb-4"
             >
               <!-- Pastikan data campaign ada sebelum merender kartu donasi -->
-              <!-- Perbaikan: Pindahkan v-if="donation.campaign" ke div terluar di dalam v-for -->
               <div
                 v-if="donation.campaign && donation.campaign.slug"
                 class="col-span-4"
@@ -52,7 +51,9 @@
                           >
                         </p>
                         <div v-if="donation.status == 'pending'" class="mt-3">
+                          <!-- Panggil fungsi payment dengan snap_token -->
                           <button
+                            @click="payment(donation.snap_token)"
                             class="w-full bg-yellow-600 rounded shadow-sm text-xs py-1 px-2 focus:outline-none"
                           >
                             BAYAR SEKARANG
@@ -95,8 +96,6 @@
                   </div>
                 </div>
               </div>
-              <!-- Tampilkan pesan jika data campaign tidak ditemukan untuk donasi tertentu -->
-              <!-- Hanya tampilkan ini jika donation.campaign tidak ada, tetapi donation.id ada -->
               <div
                 v-else
                 class="col-span-4 bg-gray-200 rounded-md shadow-sm p-2"
@@ -115,7 +114,6 @@
             ></a>
           </div>
         </div>
-        <!-- Tampilkan pesan jika tidak ada transaksi donasi sama sekali -->
         <div v-else>
           <div class="mb-3 bg-red-500 text-white p-4 rounded-md">
             Anda Belum Memiliki Transaksi Donasi Saat ini!
@@ -131,6 +129,8 @@
 import { computed, onMounted } from "vue";
 //hook vuex
 import { useStore } from "vuex";
+//hook vue router
+import { useRouter } from "vue-router"; // <-- Import useRouter
 // Import mixin
 import globalMixins from "@/mixins"; // Pastikan path ini benar
 
@@ -139,6 +139,8 @@ export default {
   setup() {
     //store vuex
     const store = useStore();
+    //router
+    const router = useRouter(); // <-- Inisialisasi useRouter
 
     //onMounted akan menjalankan action "getDonation" di module "donation"
     onMounted(() => {
@@ -148,13 +150,12 @@ export default {
     // Fungsi utilitas untuk membersihkan string agar aman digunakan sebagai nilai atribut HTML
     const sanitizeAttribute = (str) => {
       if (typeof str !== "string") {
-        return ""; // Pastikan input adalah string, kembalikan string kosong jika tidak
+        return "";
       }
-      // Hapus karakter yang tidak valid untuk atribut HTML, termasuk komentar HTML
       return str
-        .replace(/<!--.*?-->/g, "") // Hapus komentar HTML
-        .replace(/[<>&"']/g, "") // Hapus karakter yang bisa menyebabkan masalah
-        .replace(/[\u0000-\u001F\u007F-\u009F]/g, ""); // Hapus karakter kontrol
+        .replace(/<!--.*?-->/g, "")
+        .replace(/[<>&"']/g, "")
+        .replace(/[\u0000-\u001F\u007F-\u009F]/g, "");
     };
 
     // Fungsi utilitas untuk memformat tanggal
@@ -162,23 +163,19 @@ export default {
       if (!dateString) return "";
       const date = new Date(dateString);
       const options = { day: "2-digit", month: "short", year: "numeric" };
-      return date.toLocaleDateString("en-GB", options).replace(/ /g, "-"); // Format: DD-Mon-YYYY
+      return date.toLocaleDateString("en-GB", options).replace(/ /g, "-");
     };
 
     //digunakan untuk get data state "donations" di module "donation"
     const donations = computed(() => {
-      // Pastikan store.state.donation.donations adalah array sebelum memanggil map
       const fetchedDonations = Array.isArray(store.state.donation.donations)
         ? store.state.donation.donations
         : [];
 
-      // Map data donasi untuk menambahkan properti campaignImageComputed
-      // Sekarang kita bisa langsung mengiterasi fetchedDonations karena mutasi sudah menjamin campaign ada (objek kosong jika tidak ada data)
       return fetchedDonations.map((donation) => {
-        const LARAVEL_BASE_URL = "http://donasi-dm.test"; // <-- SESUAIKAN DENGAN BASE URL BACKEND ANDA!
+        const LARAVEL_BASE_URL = "http://donasi-dm.test";
 
         let campaignImageUrl;
-        // Periksa properti campaign.image sebelum mengaksesnya (campaign sudah dijamin objek)
         if (donation.campaign.image) {
           if (
             donation.campaign.image.startsWith("http://") ||
@@ -204,17 +201,47 @@ export default {
 
     //digunakan untuk get data state "nextExists" di module "donation"
     const nextExists = computed(() => {
-      return store.state.donation.nextExists; // <-- Mengambil state nextExists
+      return store.state.donation.nextExists;
     });
 
     //digunakan untuk get data state "nextPage" di module "donation"
     const nextPage = computed(() => {
-      return store.state.donation.nextPage; // <-- Mengambil state nextPage
+      return store.state.donation.nextPage;
     });
 
     //loadMore function
     function loadMore() {
-      store.dispatch("donation/getLoadMore", nextPage.value); // <-- Memanggil action getLoadmore
+      store.dispatch("donation/getLoadMore", nextPage.value);
+    }
+
+    //function payment "Midtrans"
+    function payment(snap_token) {
+      if (window.snap) {
+        // Pastikan window.snap sudah tersedia
+        window.snap.pay(snap_token, {
+          onSuccess: function () {
+            router.push({ name: "donation.index" });
+          },
+          onPending: function () {
+            router.push({ name: "donation.index" });
+          },
+          onError: function (result) {
+            console.error("Payment error:", result);
+            router.push({ name: "donation.index" });
+          },
+          onClose: function () {
+            // Opsional: Handle jika popup ditutup tanpa menyelesaikan transaksi
+            console.log(
+              "Payment popup closed without finishing the transaction"
+            );
+            // router.push({name: 'donation.index'}); // Bisa diarahkan ulang atau biarkan di halaman saat ini
+          },
+        });
+      } else {
+        console.error("Midtrans Snap is not loaded.");
+        // Beri tahu pengguna bahwa pembayaran tidak dapat diproses (misalnya dengan toast)
+        // toast.error("Pembayaran tidak dapat diproses. Coba lagi nanti.");
+      }
     }
 
     // Ekstraksi method dari mixin agar tersedia di template
@@ -225,9 +252,10 @@ export default {
       nextExists,
       nextPage,
       loadMore,
-      formatPrice, // Kembalikan formatPrice agar bisa digunakan di template
-      sanitizeAttribute, // Kembalikan fungsi sanitasi
-      formatDate, // Kembalikan fungsi format tanggal
+      formatPrice,
+      sanitizeAttribute,
+      formatDate,
+      payment, // <-- Kembalikan fungsi payment
     };
   },
 };
