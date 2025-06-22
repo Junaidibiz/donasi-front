@@ -1,10 +1,12 @@
 <template>
   <div class="pb-20 pt-20">
     <div class="container mx-auto grid grid-cols-1 p-3 sm:w-full md:w-5/12">
+      <!-- Pastikan campaign sudah ada sebelum merender isinya -->
       <div
         v-if="campaign && Object.keys(campaign).length > 0"
         class="bg-white rounded-md shadow-md p-3"
       >
+        <!-- Campaign Image -->
         <img
           class="rounded-md w-full"
           :src="campaignImageComputed"
@@ -143,7 +145,8 @@
       <div class="bg-white rounded-md shadow-md p-3">
         <div class="text-lg font-semibold">Cerita</div>
         <div class="border-2 border-gray-200 mt-3 mb-2"></div>
-        <div v-html="campaign.description"></div>
+        <!-- Gunakan processedDescription untuk menampilkan cerita -->
+        <div class="text-sm text-gray-600" v-html="processedDescription"></div>
       </div>
     </div>
 
@@ -208,7 +211,7 @@ import { computed, onMounted } from "vue";
 //hook vuex
 import { useStore } from "vuex";
 //hook vue router
-import { useRoute } from "vue-router"; // <--- Pastikan useRoute diimpor
+import { useRoute } from "vue-router";
 // Loader
 import { FacebookLoader } from "vue-content-loader";
 import globalMixins from "@/mixins"; // Import mixin di sini
@@ -219,7 +222,7 @@ export default {
     FacebookLoader,
   },
   setup() {
-    const route = useRoute(); // <--- Inisialisasi useRoute
+    const route = useRoute();
     const store = useStore();
 
     onMounted(() => {
@@ -227,45 +230,33 @@ export default {
     });
 
     const campaignImageComputed = computed(() => {
-      const fetchedCampaign = store.state.campaign.campaign;
-      if (!fetchedCampaign || !fetchedCampaign.id) {
-        return "";
-      }
-      const LARAVEL_BASE_URL = "http://donasi-dm.test";
+      const LARAVEL_BASE_URL = "http://donasi-dm.test"; // Base URL for Laravel backend
 
-      let imageUrl;
       if (
-        fetchedCampaign.image &&
-        (fetchedCampaign.image.startsWith("http://") ||
-          fetchedCampaign.image.startsWith("https://"))
+        store.state.campaign.campaign &&
+        store.state.campaign.campaign.image
       ) {
-        imageUrl = fetchedCampaign.image;
-      } else if (fetchedCampaign.image) {
-        if (fetchedCampaign.image.startsWith("/storage")) {
-          imageUrl = `${LARAVEL_BASE_URL}${fetchedCampaign.image}`;
+        const imagePath = store.state.campaign.campaign.image;
+        if (
+          imagePath.startsWith("http://") ||
+          imagePath.startsWith("https://")
+        ) {
+          return imagePath;
+        } else if (imagePath.startsWith("/storage")) {
+          return `${LARAVEL_BASE_URL}${imagePath}`;
         } else {
-          imageUrl = `${LARAVEL_BASE_URL}/storage/campaigns/${fetchedCampaign.image}`;
+          return `${LARAVEL_BASE_URL}/storage/campaigns/${imagePath}`;
         }
-      } else {
-        imageUrl = "https://placehold.co/384x512/E0E0E0/333333?text=No+Image";
       }
-      return imageUrl;
+      return "https://placehold.co/384x512/E0E0E0/333333?text=No+Image"; // Placeholder if no image
     });
 
     const campaign = computed(() => {
-      const fetchedCampaign = store.state.campaign.campaign;
-      if (!fetchedCampaign || !fetchedCampaign.id) {
-        return {};
-      }
-      return fetchedCampaign;
+      return store.state.campaign.campaign;
     });
 
     const user = computed(() => {
-      const fetchedUser = store.state.campaign.user;
-      if (!fetchedUser || !fetchedUser.id) {
-        return {};
-      }
-      return fetchedUser;
+      return store.state.campaign.user;
     });
 
     const donaturAvatarComputed = computed(() => {
@@ -324,6 +315,38 @@ export default {
       return store.state.campaign.donations || [];
     });
 
+    /**
+     * Computed property untuk memproses deskripsi campaign.
+     * Mencari tag <img> dengan src relatif dan menggantinya dengan URL absolut.
+     */
+    const processedDescription = computed(() => {
+      let description = campaign.value.description;
+      if (!description) return "";
+
+      const LARAVEL_BASE_URL = "http://donasi-dm.test"; // Base URL Laravel backend
+
+      // Gunakan regex untuk menemukan semua tag <img> dan atribut src mereka
+      // Regex ini akan menangkap src="..."
+      const regex = /<img[^>]+src="([^"]+)"/g;
+
+      // Ganti setiap src relatif dengan src absolut
+      const transformedDescription = description.replace(
+        regex,
+        (match, src) => {
+          if (src.startsWith("http://") || src.startsWith("https://")) {
+            return match; // Biarkan jika sudah URL absolut
+          } else if (src.startsWith("/storage")) {
+            return match.replace(src, `${LARAVEL_BASE_URL}${src}`); // Tambahkan base URL jika relatif ke /storage
+          } else {
+            // Asumsi path di database adalah relatif ke public/storage/campaigns/ atau semacamnya
+            // Perlu disesuaikan jika struktur folder gambar di deskripsi berbeda
+            return match.replace(src, `${LARAVEL_BASE_URL}/storage/${src}`); // Contoh: /storage/my_image.jpg
+          }
+        }
+      );
+      return transformedDescription;
+    });
+
     // Ekstraksi method dari mixin agar tersedia di template
     const { formatPrice, percentage, maxDate, countDay } = globalMixins.methods;
 
@@ -335,11 +358,12 @@ export default {
       getDonationDonaturAvatar,
       sumDonation,
       donations,
+      processedDescription, // <-- Kembalikan processedDescription
       formatPrice,
       percentage,
       maxDate,
       countDay,
-      route, // <--- Penting: Kembalikan `route` agar bisa diakses di template
+      route,
     };
   },
 };

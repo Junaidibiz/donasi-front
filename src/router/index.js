@@ -98,15 +98,22 @@ const routes = [
       ),
   },
   {
-    path: "/donation/create/:slug", // <-- NEW ROUTE FOR CREATE DONATION
+    path: "/donation/create/:slug",
     name: "donation.create",
     component: () =>
       import(
         /* webpackChunkName: "donationCreate" */ "../views/donation/Create.vue"
       ),
     meta: {
-      requiresAuth: true, // <-- Requires authentication
+      requiresAuth: true,
     },
+  },
+  {
+    // <-- Rute baru untuk halaman pencarian
+    path: "/search",
+    name: "search",
+    component: () =>
+      import(/* webpackChunkName: "search" */ "../views/search/Index.vue"),
   },
 ];
 

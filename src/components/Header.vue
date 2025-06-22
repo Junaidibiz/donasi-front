@@ -19,6 +19,9 @@
           <div class="col-span-8">
             <input
               type="text"
+              @click="linkToSearch"
+              v-model="search"
+              @keyup="searchQuery"
               class="appearance-none w-full bg-gray-500 rounded-full h-7 shadow-md placeholder-white focus:outline-none focus:placeholder-gray-600 focus:bg-white focus-within:text-gray-600 p-5"
               placeholder="Cari yang ingin kamu bantu"
             />
@@ -30,8 +33,46 @@
 </template>
 
 <script>
+//hook vue
+import { ref } from "vue";
+//hook vue router
+import { useRouter } from "vue-router";
+//hook vuex
+import { useStore } from "vuex";
+
 export default {
   name: "HeaderComponent",
+  setup() {
+    //router
+    const router = useRouter();
+    //store
+    const store = useStore();
+
+    //state search
+    const search = ref(null);
+
+    /**
+     * Fungsi yang dipicu setiap kali ada input pada form pencarian.
+     * Ini akan mendispatch aksi pencarian ke Vuex.
+     */
+    function searchQuery() {
+      // Dispatch aksi 'searchCampaign' di module 'campaign' dengan nilai input pencarian
+      store.dispatch("campaign/searchCampaign", search.value);
+    }
+
+    //redirect to route search
+    function linkToSearch() {
+      router.push({
+        name: "search",
+      });
+    }
+
+    return {
+      search,
+      linkToSearch,
+      searchQuery,
+    };
+  },
 };
 </script>
 
