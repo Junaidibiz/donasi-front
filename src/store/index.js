@@ -5,7 +5,7 @@ import { createStore } from "vuex";
 import auth from "./module/auth";
 
 // Import module donation
-import donation from "./module/donation";
+import donation from "./module/donation"; // <-- Pastikan ini diimpor
 
 // Import module profile
 import profile from "./module/profile";
@@ -17,16 +17,16 @@ import slider from "./module/slider";
 import category from "./module/category";
 
 // Import module campaign
-import campaign from "./module/campaign"; // <-- ADD THIS IMPORT
+import campaign from "./module/campaign";
 
 // Create store vuex
 export default createStore({
   modules: {
-    auth, // <-- auth module
-    donation, // <-- donation module
-    profile, // <-- profile module
-    slider, // <-- slider module
-    category, // <-- category module
-    campaign, // <-- ADD THIS MODULE
+    auth,
+    donation, // <-- Pastikan ini terdaftar di sini
+    profile,
+    slider,
+    category,
+    campaign,
   },
 });
