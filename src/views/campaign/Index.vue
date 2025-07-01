@@ -3,38 +3,27 @@
     <div class="container mx-auto grid grid-cols-1 p-3 sm:w-full md:w-5/12">
       <div v-if="campaigns.length > 0">
         <div class="mt-5">
-          <!-- Container for campaigns, removed grid-cols-4 and v-for here -->
-          <div
-            v-for="campaign in campaigns"
-            :key="campaign.id"
-            class="grid grid-cols-4 gap-4 mb-4"
-          >
-            <!-- Added mb-4 for spacing between campaign cards -->
-            <div class="col-span-4">
-              <div class="bg-white rounded-md shadow-md p-2">
-                <div class="md:flex rounded-xl md:p-0">
+          <div v-for="campaign in campaigns" :key="campaign.id" class="mb-4">
+            <router-link
+              :to="{
+                name: 'campaign.show',
+                params: { slug: campaign.slug },
+              }"
+              class="block"
+            >
+              <div class="bg-white rounded-md shadow-md p-3">
+                <div class="flex rounded-xl space-x-4">
                   <img
-                    class="w-full h-34 md:w-56 rounded object-cover"
+                    class="w-32 h-32 rounded object-cover flex-shrink-0"
                     :src="campaign.imageComputed"
-                    width="384"
-                    height="512"
+                    alt="Campaign Image"
                   />
-                  <!-- campaign.imageComputed -->
-                  <div
-                    class="w-full pt-6 p-5 md:p-3 text-center md:text-left space-y-4"
-                  >
-                    <router-link
-                      :to="{
-                        name: 'campaign.show',
-                        params: { slug: campaign.slug },
-                      }"
-                    >
-                      <p class="text-sm font-semibold">
-                        {{ campaign.title }}
-                      </p>
-                    </router-link>
+                  <div class="w-full text-left space-y-1">
+                    <p class="text-sm font-semibold text-gray-800">
+                      {{ campaign.title }}
+                    </p>
                     <div class="font-medium">
-                      <div class="mt-3 text-gray-500 text-xs">
+                      <div class="mt-1 text-gray-500 text-xs">
                         {{ campaign.user.name }}
                       </div>
                       <div v-if="campaign.sum_donation.length > 0">
@@ -44,7 +33,7 @@
                         >
                           <div class="relative pt-1">
                             <div
-                              class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-blue-200"
+                              class="overflow-hidden h-2 mb-2 text-xs flex rounded bg-blue-200"
                             >
                               <div
                                 :style="{
@@ -62,51 +51,45 @@
                             <span class="font-bold text-blue-400"
                               >Rp. {{ formatPrice(donation.total) }}
                             </span>
-                            terkumpul dari
-                            <span class="font-bold"
-                              >Rp.
-                              {{ formatPrice(campaign.target_donation) }}</span
-                            >
                           </p>
                         </div>
                       </div>
                       <div v-else>
                         <div class="relative pt-1">
                           <div
-                            class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-blue-200"
+                            class="overflow-hidden h-2 mb-2 text-xs flex rounded bg-blue-200"
                           >
                             <div
-                              :style="{
-                                width:
-                                  percentage(0, campaign.target_donation) + '%',
-                              }"
+                              style="width: 0%"
                               class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500"
                             ></div>
                           </div>
                         </div>
                         <p class="text-xs text-gray-500">
                           <span class="font-bold text-blue-400">Rp. 0 </span>
-                          terkumpul dari
-                          <span class="font-bold"
-                            >Rp.
-                            {{ formatPrice(campaign.target_donation) }}</span
-                          >
                         </p>
                       </div>
-                      <div class="mt-3 text-xs">
-                        <strong>{{ countDay(campaign.max_date) }}</strong> hari
-                        lagi
+                      <div class="mt-2 text-xs flex justify-between">
+                        <span class="text-gray-500">
+                          Terkumpul dari
+                          <strong
+                            >Rp.
+                            {{ formatPrice(campaign.target_donation) }}</strong
+                          >
+                        </span>
+                        <span class="font-bold"
+                          >{{ countDay(campaign.max_date) }} hari lagi</span
+                        >
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </router-link>
           </div>
         </div>
       </div>
       <div v-else>
-        <!-- Loading block for campaigns -->
         <div
           v-for="index in 2"
           :key="index"
@@ -115,7 +98,6 @@
           <FacebookLoader class="h-24" />
         </div>
       </div>
-      <!-- Load More button -->
       <div class="text-center mt-4 mb-4" v-show="nextExists">
         <a
           @click="loadMore"
@@ -134,37 +116,34 @@ import { useStore } from "vuex";
 import { FacebookLoader } from "vue-content-loader";
 
 export default {
-  name: "CampaignIndexComponent", // Changed from HomeComponent to CampaignIndexComponent
+  name: "CampaignIndexComponent",
   components: {
     FacebookLoader,
   },
   setup() {
     const store = useStore();
 
-    //onMounted will run "getCampaign" action in "campaign" module
     onMounted(() => {
       store.dispatch("campaign/getCampaign");
     });
 
-    //used to get "campaigns" state data in "campaign" module
     const campaigns = computed(() => {
-      // KOREKSI: Map data campaign untuk menambahkan properti imageComputed (sama seperti di Home.vue)
       return store.state.campaign.campaigns.map((campaign) => {
-        const LARAVEL_BASE_URL = "http://donasi-dm.test"; // <-- SESUAIKAN DENGAN BASE URL DOMAIN BACKEND ANDA
+        const LARAVEL_BASE_URL = "http://donasi-dm.test";
 
         let imageUrl;
         if (
-          campaign.image.startsWith("http://") ||
-          campaign.image.startsWith("https://")
+          campaign.image &&
+          (campaign.image.startsWith("http://") ||
+            campaign.image.startsWith("https://"))
         ) {
           imageUrl = campaign.image;
+        } else if (campaign.image && campaign.image.startsWith("/storage")) {
+          imageUrl = `${LARAVEL_BASE_URL}${campaign.image}`;
+        } else if (campaign.image) {
+          imageUrl = `${LARAVEL_BASE_URL}/storage/campaigns/${campaign.image}`;
         } else {
-          if (campaign.image.startsWith("/storage")) {
-            imageUrl = `${LARAVEL_BASE_URL}${campaign.image}`;
-          } else {
-            // Assume path in database is relative to public/storage/campaigns/ (e.g. 'campaigns/image.png')
-            imageUrl = `${LARAVEL_BASE_URL}/storage/campaigns/${campaign.image}`; // <-- Adjust folder if different
-          }
+          imageUrl = `https://placehold.co/300x300/e2e8f0/e2e8f0`;
         }
 
         return {
@@ -174,18 +153,13 @@ export default {
       });
     });
 
-    /**
-     * LOADMORE
-     */
-    //get status NextExists
     const nextExists = computed(() => {
       return store.state.campaign.nextExists;
     });
-    //get nextPage
     const nextPage = computed(() => {
       return store.state.campaign.nextPage;
     });
-    //loadMore function
+
     function loadMore() {
       store.dispatch("campaign/getLoadMore", nextPage.value);
     }
@@ -199,6 +173,4 @@ export default {
   },
 };
 </script>
-<style>
-/* You can add custom styles here if needed, or leave it empty if fully using Tailwind */
-</style>
+<style></style>

@@ -1,1 +1,32 @@
 @import "tailwindcss";
+
+@theme {
+  /* ... (tempel semua variabel --color- dan --text- dari kode Anda di sini) ... */
+  --shadow-sm: 0 1px 1px 0 rgb(0 0 0 / 0.05), 0 1px 2px 0 rgb(0 0 0 / 0.02);
+
+  --color-damu-50: #f5f9eb;
+  --color-damu-100: #e7f1d2;
+  --color-damu-200: #d5e7b2;
+  --color-damu-300: #c2db93;
+  --color-damu-400: #acca76;
+  --color-damu-500: #89b61e;
+  --color-damu-600: #76a319;
+  --color-damu-700: #5f8011;
+  --color-damu-800: #4a640f;
+  --color-damu-900: #3a4e0f;
+  --color-damu-950: #1f2a06;
+
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #bfc4cd;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+  --color-gray-950: #030712;
+
+  /* ... dan seterusnya untuk semua warna ... */
+}
