@@ -1,162 +1,139 @@
 <template>
-  <div class="pb-20 pt-20">
-    <div class="container mx-auto grid grid-cols-1 p-5 sm:w-full md:w-5/12">
-      <form @submit.prevent="register">
-        <div class="bg-white rounded-md shadow-md p-5">
-          <div class="text-xl">REGISTER AKUN</div>
-          <div class="border-2 border-gray-200 mt-3 mb-2"></div>
+  <div class="pb-20 pt-24 bg-gray-100 min-h-screen">
+    <div class="container mx-auto grid grid-cols-1 p-4 sm:w-full md:w-5/12">
+      <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-lg mx-auto">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-6 text-center">
+          Register Akun
+        </h2>
 
-          <div class="mb-2">
-            <label class="mt-2">Nama Lengkap</label>
-            <input
-              type="text"
-              v-model="user.name"
-              class="mt-2 appearance-none w-full bg-gray-200 border border-gray-200 rounded h-7 shadow-sm placeholder-gray-600 focus:outline-none focus:placeholder-gray-600 focus:bg-white focus-within:text-gray-600 p-5"
-              placeholder="Nama Lengkap"
-            />
-          </div>
-
-          <div class="mb-2">
-            <label class="mt-2">Alamat Email</label>
-            <input
-              type="email"
-              v-model="user.email"
-              class="mt-2 appearance-none w-full bg-gray-200 border border-gray-200 rounded h-7 shadow-sm placeholder-gray-600 focus:outline-none focus:placeholder-gray-600 focus:bg-white focus-within:text-gray-600 p-5"
-              placeholder="Alamat Email"
-            />
-          </div>
-
-          <div class="cols-span-1 mb-5">
-            <label class="mt-2">Password</label>
-            <input
-              type="password"
-              v-model="user.password"
-              class="mt-2 appearance-none w-full bg-gray-200 border border-gray-200 rounded h-7 shadow-sm placeholder-gray-600 focus:outline-none focus:placeholder-gray-600 focus:bg-white focus-within:text-gray-600 p-5"
-              placeholder="Password"
-            />
-          </div>
-
-          <div class="cols-span-1 mb-5">
-            <label class="mt-2">Konfirmasi Password</label>
-            <input
-              type="password"
-              v-model="user.password_confirmation"
-              class="mt-2 appearance-none w-full bg-gray-200 border border-gray-200 rounded h-7 shadow-sm placeholder-gray-600 focus:outline-none focus:placeholder-gray-600 focus:bg-white focus-within:text-gray-600 p-5"
-              placeholder="Konfirmasi Password"
-            />
-          </div>
-
+        <form @submit.prevent="register" class="space-y-4">
           <div>
-            <button
-              class="bg-gray-700 py-1 px-3 text-white rounded-md shadow-md text-xl inline-block w-full focus:outline-none focus:bg-gray-900"
+            <label class="block text-sm text-gray-600 mb-1" for="nama"
+              >Nama Lengkap</label
             >
-              DAFTAR
-            </button>
+            <input
+              v-model="user.name"
+              type="text"
+              id="nama"
+              placeholder="Nama Lengkap"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:outline-none"
+            />
           </div>
-        </div>
-      </form>
-
-      <div class="text-center mt-5">
-        Sudah punya akun ?
-        <router-link :to="{ name: 'login' }" class="underline text-blue-600"
-          >Masuk Disini !</router-link
-        >
+          <div>
+            <label class="block text-sm text-gray-600 mb-1" for="email"
+              >Alamat Email</label
+            >
+            <input
+              v-model="user.email"
+              type="email"
+              id="email"
+              placeholder="Alamat Email"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600 mb-1" for="password"
+              >Password</label
+            >
+            <input
+              v-model="user.password"
+              type="password"
+              id="password"
+              placeholder="Password"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600 mb-1" for="konfirmasi"
+              >Konfirmasi Password</label
+            >
+            <input
+              v-model="user.password_confirmation"
+              type="password"
+              id="konfirmasi"
+              placeholder="Konfirmasi Password"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:outline-none"
+            />
+          </div>
+          <button
+            type="submit"
+            class="w-full bg-gray-800 hover:bg-gray-900 text-white font-semibold py-3 rounded-lg transition duration-200"
+          >
+            DAFTAR
+          </button>
+        </form>
+        <p class="text-sm text-center mt-6 text-gray-600">
+          Sudah punya akun?
+          <router-link
+            :to="{ name: 'login' }"
+            class="text-gray-800 hover:underline font-medium"
+            >Masuk Disini!</router-link
+          >
+        </p>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-//hook vue
-import { ref, reactive } from "vue"; // Import ref dan reactive untuk reactivity API
-
-//hook vuex
-import { useStore } from "vuex"; // Import useStore dari vuex
-
-//hook vue router
-import { useRouter } from "vue-router"; // Import useRouter dari vue-router
-
-//hook Toast
-import { useToast } from "vue-toastification"; // Import useToast dari vue-toastification
+// Bagian script tidak perlu diubah karena sudah menangani semua logika
+import { ref, reactive } from "vue";
+import { useStore } from "vuex";
+import { useRouter } from "vue-router";
+import { useToast } from "vue-toastification";
 
 export default {
   name: "RegisterComponent",
   setup() {
-    // Menggunakan setup() untuk Composition API
-    //user state
     const user = reactive({
-      // Mendefinisikan state user dengan reactive
       name: "",
       email: "",
       password: "",
       password_confirmation: "",
     });
 
-    //validation state
-    const validation = ref([]); // Mendefinisikan state validation dengan ref
+    const validation = ref([]);
+    const store = useStore();
+    const router = useRouter();
+    const toast = useToast();
 
-    //store vuex
-    const store = useStore(); // Menggunakan hook useStore
-
-    //route
-    const router = useRouter(); // Menggunakan hook useRouter
-
-    //same interface as this.$toast
-    const toast = useToast(); // Menggunakan hook useToast
-
-    //function register, fungsi ini di jalankan ketika form di submit
     function register() {
-      //define variable
       let name = user.name;
       let email = user.email;
       let password = user.password;
       let password_confirmation = user.password_confirmation;
 
-      //panggil actions "register" dari module "auth"
       store
         .dispatch("auth/register", {
-          // Memanggil action 'auth/register' dari Vuex
           name,
           email,
           password,
           password_confirmation,
         })
         .then(() => {
-          //redirect ke dashboard
-          router.push({ name: "dashboard" }); // Redirect ke route 'dashboard' setelah sukses
-
-          toast.success("Register Berhasil!"); // Menampilkan toast sukses
+          router.push({ name: "dashboard" });
+          toast.success("Register Berhasil!");
         })
         .catch((error) => {
-          //show validaation message
-          validation.value = error; // Mengisi state validation dengan error response
-
-          //show validation name with toast
+          validation.value = error;
           if (validation.value.name) {
-            toast.error(`${validation.value.name[0]}`); // Menampilkan error validasi nama
+            toast.error(`${validation.value.name[0]}`);
           }
-
-          //show validation email with toast
           if (validation.value.email) {
-            toast.error(`${validation.value.email[0]}`); // Menampilkan error validasi email
+            toast.error(`${validation.value.email[0]}`);
           }
-
-          //show validation password with toast
           if (validation.value.password) {
-            toast.error(`${validation.value.password[0]}`); // Menampilkan error validasi password
+            toast.error(`${validation.value.password[0]}`);
           }
         });
     }
 
-    //return a state and function
     return {
-      user, // <-- state user
-      validation, // <-- state validation
-      register, // <-- method register
-      toast, // <-- hook toast
+      user,
+      validation,
+      register,
+      toast,
     };
   },
 };
 </script>
-
-<style></style>
