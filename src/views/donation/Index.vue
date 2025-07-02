@@ -1,117 +1,89 @@
 <template>
-  <div class="pb-20 pt-20">
+  <div class="pb-20 pt-24">
     <div class="container mx-auto grid grid-cols-1 p-3 sm:w-full md:w-5/12">
       <div class="bg-white rounded-md shadow-md p-5">
         <div class="text-xl">RIWAYAT DONASI SAYA</div>
         <div class="border-2 border-gray-200 mt-3 mb-2"></div>
 
-        <!-- Tampilkan riwayat donasi jika ada data -->
         <div v-if="donations && donations.length > 0">
-          <div class="mt-5">
-            <div
-              v-for="donation in donations"
-              :key="donation.id"
-              class="grid grid-cols-4 gap-4 mb-4"
-            >
-              <!-- Pastikan data campaign ada sebelum merender kartu donasi -->
-              <div
-                v-if="donation.campaign && donation.campaign.slug"
-                class="col-span-4"
-              >
-                <div class="bg-gray-200 rounded-md shadow-sm p-2">
-                  <div class="md:flex rounded-xl md:p-0">
-                    <img
-                      class="w-full h-34 md:w-full rounded mx-auto object-cover"
-                      :src="donation.campaignImageComputed"
-                      :alt="sanitizeAttribute(donation.campaign.title)"
-                      onerror="this.onerror=null;this.src='https://placehold.co/384x512/E0E0E0/333333?text=No+Image';"
-                      width="384"
-                      height="512"
-                    />
-                    <div
-                      class="w-full pt-6 p-5 md:p-3 text-center md:text-left space-y-4"
-                    >
+          <div class="mt-5 space-y-4">
+            <div v-for="donation in donations" :key="donation.id">
+              <div v-if="donation.campaign && donation.campaign.slug">
+                <div
+                  class="bg-gray-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center w-full space-y-4 sm:space-y-0 sm:space-x-4"
+                >
+                  <img
+                    class="w-full sm:w-32 h-40 sm:h-28 object-cover rounded-lg flex-shrink-0"
+                    :src="donation.campaignImageComputed"
+                    :alt="sanitizeAttribute(donation.campaign.title)"
+                    onerror="this.onerror=null;this.src='https://placehold.co/120x120/e2e8f0/e2e8f0';"
+                  />
+                  <div class="flex-1 w-full">
+                    <div class="flex justify-between items-start">
                       <router-link
                         :to="{
                           name: 'campaign.show',
                           params: { slug: donation.campaign.slug },
                         }"
                       >
-                        <p class="text-sm font-semibold">
+                        <h2
+                          class="text-gray-800 font-semibold text-base leading-tight pr-2"
+                        >
                           {{ donation.campaign.title }}
-                        </p>
+                        </h2>
                       </router-link>
-                      <div class="font-medium">
-                        <p class="text-xs text-gray-500 mt-3">
-                          <span class="font-bold text-gray-500 mr-3">{{
-                            formatDate(donation.created_at)
-                          }}</span>
-                          <span class="font-bold text-blue-900"
-                            >Rp. {{ formatPrice(donation.amount) }}</span
-                          >
-                        </p>
-                        <div v-if="donation.status == 'pending'" class="mt-3">
-                          <!-- Panggil fungsi payment dengan snap_token -->
-                          <button
-                            @click="payment(donation.snap_token)"
-                            class="w-full bg-yellow-600 rounded shadow-sm text-xs py-1 px-2 focus:outline-none"
-                          >
-                            BAYAR SEKARANG
-                          </button>
-                        </div>
-                      </div>
+                      <span
+                        v-if="donation.status == 'success'"
+                        class="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium flex-shrink-0"
+                        >Berhasil</span
+                      >
+                      <span
+                        v-else-if="donation.status == 'pending'"
+                        class="bg-yellow-400 text-gray-800 text-xs px-2 py-1 rounded-full font-medium flex-shrink-0"
+                        >Pending</span
+                      >
+                      <span
+                        v-else
+                        class="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium flex-shrink-0"
+                        >Dibatalkan</span
+                      >
                     </div>
-                    <div
-                      class="ml-auto text-sm text-gray-500 underline self-start pt-3 pr-3"
+
+                    <div class="mt-2 flex justify-between items-center">
+                      <span class="text-sm text-gray-600">{{
+                        formatDate(donation.created_at)
+                      }}</span>
+                      <span class="text-sm text-blue-600 font-semibold"
+                        >Rp. {{ formatPrice(donation.amount) }}</span
+                      >
+                    </div>
+
+                    <button
+                      v-if="donation.status == 'pending'"
+                      @click.prevent="payment(donation.snap_token)"
+                      class="mt-3 w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold py-2 rounded-lg"
                     >
-                      <div v-if="donation.status == 'success'">
-                        <button
-                          class="bg-green-500 border-2 border-green-500 rounded shadow-sm text-xs py-1 px-2 text-black focus:outline-none"
-                        >
-                          Berhasil
-                        </button>
-                      </div>
-                      <div v-else-if="donation.status == 'pending'">
-                        <button
-                          class="bg-yellow-500 border-2 border-yellow-500 rounded shadow-sm text-xs py-1 px-2 text-black focus:outline-none"
-                        >
-                          Pending
-                        </button>
-                      </div>
-                      <div v-else-if="donation.status == 'expired'">
-                        <button
-                          class="bg-red-500 border-2 border-red-500 rounded shadow-sm text-xs py-1 px-2 text-black focus:outline-none"
-                        >
-                          Dibatalkan
-                        </button>
-                      </div>
-                      <div v-else-if="donation.status == 'failed'">
-                        <button
-                          class="bg-red-500 border-2 border-red-500 rounded shadow-sm text-xs py-1 px-2 text-black focus:outline-none"
-                        >
-                          Dibatalkan
-                        </button>
-                      </div>
-                    </div>
+                      BAYAR SEKARANG
+                    </button>
                   </div>
                 </div>
               </div>
               <div
                 v-else
-                class="col-span-4 bg-gray-200 rounded-md shadow-sm p-2"
+                class="bg-gray-200 rounded-xl p-4 text-center text-gray-500"
               >
-                <p class="text-center text-gray-500">
-                  Data Campaign tidak tersedia untuk donasi ini.
-                </p>
+                Data Campaign untuk donasi ini tidak tersedia.
               </div>
             </div>
           </div>
+
           <div class="text-center mt-7" v-show="nextExists">
             <a
               @click="loadMore"
               class="bg-gray-700 text-white p-1 px-3 rounded-md shadow-md focus:outline-none focus:bg-gray-900 cursor-pointer"
-              >LIHAT SEMUA <i class="fa fa-long-arrow-alt-right"></i
-            ></a>
+            >
+              LIHAT SEMUA <i class="fa fa-long-arrow-alt-right"></i>
+            </a>
           </div>
         </div>
         <div v-else>

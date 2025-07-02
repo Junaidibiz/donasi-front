@@ -1,86 +1,95 @@
 <template>
-  <div class="pb-20 pt-20">
+  <div class="pb-20 pt-24">
     <div class="container mx-auto grid grid-cols-1 p-3 sm:w-full md:w-5/12">
       <div v-if="campaigns && campaigns.length > 0">
-        <div class="mt-5">
-          <div v-for="campaign in campaigns" :key="campaign.id" class="mb-4">
+        <div class="mt-2 space-y-4">
+          <div v-for="campaign in campaigns" :key="campaign.id">
             <router-link
-              :to="{ name: 'campaign.show', params: { slug: campaign.slug } }"
+              :to="{
+                name: 'campaign.show',
+                params: { slug: campaign.slug },
+              }"
               class="block"
             >
-              <div class="bg-white rounded-md shadow-md p-3">
-                <div class="flex rounded-xl space-x-4">
+              <div
+                class="bg-white shadow-md rounded-lg p-4 w-full flex flex-col md:flex-row gap-4 items-start"
+              >
+                <div class="w-full md:w-1/3">
                   <img
-                    class="w-32 h-32 rounded object-cover flex-shrink-0"
                     :src="campaign.imageComputed"
                     :alt="campaign.title"
-                    onerror="this.onerror=null;this.src='https://placehold.co/300x300/e2e8f0/e2e8f0';"
+                    class="w-full h-40 object-cover rounded-lg"
                   />
-                  <div class="w-full text-left space-y-1">
-                    <p class="text-sm font-semibold text-gray-800">
-                      {{ campaign.title }}
-                    </p>
-                    <div class="font-medium">
-                      <div class="mt-1 text-gray-500 text-xs">
-                        {{ campaign.user.name }}
+                </div>
+
+                <div class="flex-1 space-y-2 w-full">
+                  <h2 class="text-sm font-semibold text-gray-800 leading-snug">
+                    {{ campaign.title }}
+                  </h2>
+
+                  <div v-if="campaign.sum_donation.length > 0">
+                    <div
+                      v-for="donation in campaign.sum_donation"
+                      :key="donation.id"
+                    >
+                      <p class="text-green-600 font-bold text-sm">
+                        Rp {{ formatPrice(donation.total) }}
+                      </p>
+                      <p class="text-xs text-gray-600">
+                        Terkumpul dari
+                        <strong
+                          >Rp
+                          {{ formatPrice(campaign.target_donation) }}</strong
+                        >
+                      </p>
+                      <div class="w-full bg-gray-200 h-3 rounded-full mt-2">
+                        <div
+                          class="bg-green-500 h-full rounded-full"
+                          :style="{
+                            width:
+                              percentage(
+                                donation.total,
+                                campaign.target_donation
+                              ) + '%',
+                          }"
+                        ></div>
                       </div>
                       <div
-                        v-if="
-                          campaign.sum_donation &&
-                          campaign.sum_donation.length > 0
-                        "
+                        class="flex justify-between text-xs font-medium text-gray-700 mt-1"
                       >
-                        <div
-                          v-for="donation in campaign.sum_donation"
-                          :key="donation.id"
+                        <span class="text-green-600"
+                          >{{
+                            Math.floor(
+                              percentage(
+                                donation.total,
+                                campaign.target_donation
+                              )
+                            )
+                          }}% Target Tercapai</span
                         >
-                          <div class="relative pt-1">
-                            <div
-                              class="overflow-hidden h-2 mb-2 text-xs flex rounded bg-blue-200"
-                            >
-                              <div
-                                :style="{
-                                  width:
-                                    percentage(
-                                      donation.total,
-                                      campaign.target_donation
-                                    ) + '%',
-                                }"
-                                class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500"
-                              ></div>
-                            </div>
-                          </div>
-                          <p class="text-xs text-gray-500">
-                            <span class="font-bold text-blue-400"
-                              >Rp. {{ formatPrice(donation.total) }}</span
-                            >
-                            terkumpul dari Rp.
-                            {{ formatPrice(campaign.target_donation) }}
-                          </p>
-                        </div>
+                        <span>{{ countDay(campaign.max_date) }} Hari Lagi</span>
                       </div>
-                      <div v-else>
-                        <div class="relative pt-1">
-                          <div
-                            class="overflow-hidden h-2 mb-2 text-xs flex rounded bg-blue-200"
-                          >
-                            <div
-                              style="width: 0%"
-                              class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500"
-                            ></div>
-                          </div>
-                        </div>
-                        <p class="text-xs text-gray-500">
-                          <span class="font-bold text-blue-400">Rp. 0</span>
-                          terkumpul dari Rp.
-                          {{ formatPrice(campaign.target_donation) }}
-                        </p>
-                      </div>
-                      <div class="mt-2 text-xs text-right">
-                        <span class="font-bold"
-                          >{{ countDay(campaign.max_date) }} hari lagi</span
-                        >
-                      </div>
+                    </div>
+                  </div>
+                  <div v-else>
+                    <p class="text-green-600 font-bold text-sm">Rp 0</p>
+                    <p class="text-xs text-gray-600">
+                      Terkumpul dari
+                      <strong
+                        >Rp {{ formatPrice(campaign.target_donation) }}</strong
+                      >
+                    </p>
+                    <div class="w-full bg-gray-200 h-3 rounded-full mt-2">
+                      <div
+                        class="bg-green-500 h-full rounded-full"
+                        style="width: 0%"
+                      ></div>
+                    </div>
+                    <div
+                      class="flex justify-between text-xs font-medium text-gray-700 mt-1"
+                    >
+                      <span class="text-green-600">0% Target Tercapai</span>
+                      <span>{{ countDay(campaign.max_date) }} Hari Lagi</span>
                     </div>
                   </div>
                 </div>
@@ -99,9 +108,9 @@
 </template>
 
 <script>
+// Bagian script ini sama persis dengan kode Anda yang sudah berjalan
 import { computed } from "vue";
 import { useStore } from "vuex";
-// Mixin TIDAK PERLU diimpor di sini
 
 export default {
   name: "SearchComponent",
@@ -127,7 +136,7 @@ export default {
             imageUrl = `${LARAVEL_BASE_URL}/storage/campaigns/${campaign.image}`;
           }
         } else {
-          imageUrl = "https://placehold.co/300x300/e2e8f0/e2e8f0";
+          imageUrl = "https://placehold.co/300x200/e2e8f0/e2e8f0";
         }
         return {
           ...campaign,
@@ -138,7 +147,6 @@ export default {
       });
     });
 
-    // KITA TIDAK PERLU MENGEMBALIKAN FUNGSI DARI MIXIN
     return {
       campaigns,
     };
