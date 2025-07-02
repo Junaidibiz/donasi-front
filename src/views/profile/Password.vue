@@ -1,102 +1,109 @@
 <template>
-  <div class="pb-20 pt-20">
+  <div class="pb-20 pt-24">
     <div class="container mx-auto grid grid-cols-1 p-3 sm:w-full md:w-5/12">
-      <form @submit.prevent="updatePassword" method="POST">
-        <div class="bg-white p-3 rounded-md shadow-md">
-          <div class="grid grid-cols-1 gap-4">
-            <div class="mb-2">
-              <label class="mt-2" for="new-password">Password Baru</label>
-              <input
-                type="password"
-                id="new-password"
-                class="mt-2 appearance-none w-full bg-gray-200 rounded h-7 shadow-sm placeholder-gray-700 focus:outline-none focus:placeholder-gray-600 focus:bg-gray-300 focus-within:text-gray-600 p-5"
-                placeholder="Password Baru"
-                v-model="user.password"
-              />
-            </div>
+      <div class="bg-white w-full max-w-2xl rounded-2xl shadow-xl p-8 mx-auto">
+        <h2
+          class="text-2xl font-bold text-center text-gray-800 mb-6 flex items-center justify-center gap-2"
+        >
+          <i class="fa fa-key text-yellow-500"></i> Ubah Password
+        </h2>
 
-            <div class="mb-2">
-              <label class="mt-2" for="confirm-password"
-                >Konfirmasi Password Baru</label
-              >
-              <input
-                type="password"
-                id="confirm-password"
-                class="mt-2 appearance-none w-full bg-gray-200 rounded h-7 shadow-sm placeholder-gray-700 focus:outline-none focus:placeholder-gray-600 focus:bg-gray-300 focus-within:text-gray-600 p-5"
-                placeholder="Konfirmasi Password Baru"
-                v-model="user.password_confirmation"
-              />
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                class="mt-3 bg-gray-700 text-white p-2 w-full rounded-md shadow-md focus:outline-none"
-              >
-                UPDATE PASSWORD
-              </button>
-            </div>
+        <form @submit.prevent="updatePassword" class="space-y-6">
+          <div>
+            <label
+              for="new-password"
+              class="block text-sm font-semibold text-gray-700 mb-1"
+              >Password Baru</label
+            >
+            <input
+              v-model="user.password"
+              type="password"
+              id="new-password"
+              placeholder="Masukkan password baru"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
           </div>
-        </div>
-      </form>
+
+          <div>
+            <label
+              for="confirm-password"
+              class="block text-sm font-semibold text-gray-700 mb-1"
+              >Konfirmasi Password Baru</label
+            >
+            <input
+              v-model="user.password_confirmation"
+              type="password"
+              id="confirm-password"
+              placeholder="Konfirmasi password baru"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <button
+            type="submit"
+            class="w-full bg-gray-800 text-white py-3 rounded-lg hover:bg-gray-700 transition font-semibold flex items-center justify-center gap-2 shadow-md"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-5 h-5"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M4.5 12.75l6 6 9-13.5"
+              />
+            </svg>
+            Update Password
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-//hook vue
-import { reactive, ref } from "vue"; // <-- Import ref dan reactive [cite: Langkah 1 - View/Component Update Password]
-//hook vuex
+// Bagian script tidak perlu diubah karena sudah menangani semua logika yang dibutuhkan.
+import { reactive, ref } from "vue";
 import { useStore } from "vuex";
-//hook vue router
 import { useRouter } from "vue-router";
-//hook Toast
 import { useToast } from "vue-toastification";
 
 export default {
   name: "PasswordComponent",
   setup() {
-    //store vuex
     const store = useStore();
-    //route
     const router = useRouter();
-    //same interface as this.$toast
     const toast = useToast();
 
-    //state user
     const user = reactive({
-      // <-- State untuk password baru [cite: Langkah 1 - View/Component Update Password]
       password: "",
       password_confirmation: "",
     });
-    //validation state
-    const validation = ref([]); // <-- State untuk pesan validasi [cite: Langkah 1 - View/Component Update Password]
 
-    //method update password
+    const validation = ref([]);
+
     function updatePassword() {
-      // <-- Fungsi updatePassword [cite: Langkah 1 - View/Component Update Password]
       let password = user.password;
       let password_confirmation = user.password_confirmation;
 
-      //panggil actions "updatePassword" dari module "profile"
       store
         .dispatch("profile/updatePassword", {
-          // <-- Memanggil action updatePassword dari Vuex [cite: Langkah 1 - View/Component Update Password]
           password,
           password_confirmation,
         })
         .then(() => {
-          router.push({ name: "dashboard" }); // <-- Redirect ke dashboard [cite: Langkah 1 - View/Component Update Password]
-          toast.success("Password Berhasil Diupdate!"); // <-- Toast sukses [cite: Langkah 1 - View/Component Update Password]
+          router.push({ name: "dashboard" });
+          toast.success("Password Berhasil Diupdate!");
         })
         .catch((error) => {
-          //assign validaation message
-          validation.value = error; // <-- Assign error validasi [cite: Langkah 1 - View/Component Update Password]
-          //show validation password with toast
+          validation.value = error;
           if (validation.value.password) {
-            toast.error(`${validation.value.password[0]}`); // <-- Tampilkan error validasi password [cite: Langkah 1 - View/Component Update Password]
+            toast.error(`${validation.value.password[0]}`);
           }
-          // Show general error message from backend if available
           if (validation.value.message && !validation.value.password) {
             toast.error(`${validation.value.message}`);
           }
@@ -104,12 +111,10 @@ export default {
     }
 
     return {
-      user, // <-- return state password
-      validation, // <-- return state validation
-      updatePassword, // <-- return method updatePassword
+      user,
+      validation,
+      updatePassword,
     };
   },
 };
 </script>
-
-<style></style>
