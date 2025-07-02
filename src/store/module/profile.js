@@ -1,27 +1,19 @@
+// File: src/store/module/profile.js
+
 //import global API
 import Api from "../../api/Api";
 
 const profile = {
-  //set namespace true
   namespaced: true,
-
-  //state
   state: {
-    //profile state
     profile: {},
   },
-
-  //mutations
   mutations: {
-    //set state profile dengan data dari response
     SET_PROFILE(state, data) {
       state.profile = data;
     },
   },
-
-  //actions
   actions: {
-    //action getProfile
     getProfile({ commit }) {
       const token = localStorage.getItem("token");
       Api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -31,18 +23,15 @@ const profile = {
         })
         .catch((error) => {
           console.log(error);
-          // Optional: Handle 401 Unauthorized jika diperlukan (redirect ke login, dll.)
         });
     },
-    //action updateProfile
-    updateProfile({ commit }, formData) {
+    updateProfile({ dispatch }, formData) {
       return new Promise((resolve, reject) => {
         const token = localStorage.getItem("token");
         Api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
         Api.post("/profile", formData)
           .then((response) => {
-            commit("SET_PROFILE", response.data.data);
+            dispatch("getProfile");
             resolve(response);
           })
           .catch((error) => {
@@ -50,31 +39,39 @@ const profile = {
           });
       });
     },
-    // --- ACTION BARU UNTUK UPDATE PASSWORD ---
     updatePassword({ commit }, user) {
-      // <-- Action baru untuk update password [cite: Langkah 2 - Edit Module Profile Vuex]
       return new Promise((resolve, reject) => {
         const token = localStorage.getItem("token");
         Api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
-        // Endpoint backend untuk update password
         Api.post("/profile/password", {
-          // <-- Endpoint API Laravel untuk update password [cite: Langkah 2 - Edit Module Profile Vuex]
           password: user.password,
           password_confirmation: user.password_confirmation,
         })
           .then((response) => {
-            // Update profile state (jika backend mengembalikan data user setelah update password)
-            commit("SET_PROFILE", response.data.data); // <-- Commit SET_PROFILE (opsional, tergantung backend) [cite: Langkah 2 - Edit Module Profile Vuex]
             resolve(response);
           })
           .catch((error) => {
-            reject(error.response.data); // <-- Reject promise dengan error [cite: Langkah 2 - Edit Module Profile Vuex]
+            reject(error.response.data);
+          });
+      });
+    },
+    // Action untuk menghapus foto profil
+    removeAvatar({ dispatch }) {
+      return new Promise((resolve, reject) => {
+        const token = localStorage.getItem("token");
+        Api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        // Mengirim permintaan DELETE ke endpoint yang benar
+        Api.delete("/profile/avatar")
+          .then((response) => {
+            dispatch("getProfile");
+            resolve(response);
+          })
+          .catch((error) => {
+            reject(error.response.data);
           });
       });
     },
   },
-  //getters
   getters: {},
 };
 export default profile;

@@ -1,78 +1,69 @@
 <template>
   <div class="pb-20 pt-24">
     <div class="container mx-auto grid grid-cols-1 p-3 sm:w-full md:w-5/12">
-      <div class="bg-white p-5 rounded-md shadow-md mb-5">
-        <div
-          class="flex items-center space-x-4 md:grid md:grid-cols-12 md:gap-4"
-        >
-          <div class="col-span-1 md:col-span-2 w-24 h-24 flex-shrink-0">
+      <div
+        class="bg-white w-full max-w-3xl rounded-xl shadow-lg overflow-hidden mx-auto p-6"
+      >
+        <div class="flex flex-col md:flex-row justify-between gap-6">
+          <div
+            class="w-full md:w-1/3 flex flex-col items-center text-center space-y-4"
+          >
             <img
               :src="avatarUrlComputed"
-              class="rounded-full w-full h-full object-cover"
-              alt="User Avatar"
+              alt="Foto Profil"
+              class="w-28 h-28 rounded-full border-4 border-gray-200 shadow-md object-cover mx-auto"
             />
+            <h2 class="text-xl font-semibold text-gray-800">{{ user.name }}</h2>
+            <p class="text-base text-gray-500">{{ user.email }}</p>
           </div>
-          <div class="pl-8 col-span-1 md:col-span-6">
-            <div class="font-bold text-base">
-              {{ user.name }}
-            </div>
-            <div class="mt-3">
-              <router-link
-                :to="{ name: 'profile' }"
-                class="bg-gray-700 py-1 px-3 rounded shadow-md text-white uppercase block text-center"
-                >Edit Profile</router-link
-              >
-            </div>
+
+          <div
+            class="w-full md:w-2/3 flex flex-col gap-4 justify-center mt-6 md:mt-0"
+          >
+            <router-link
+              :to="{ name: 'donation.index' }"
+              class="flex items-center justify-start gap-4 p-4 rounded-md bg-gray-100 hover:bg-gray-200 transition w-full"
+            >
+              <i class="fa fa-heart text-xl text-gray-600 w-6 text-center"></i>
+              <span class="text-gray-800 font-medium">Donasi Saya</span>
+            </router-link>
+
+            <router-link
+              :to="{ name: 'profile' }"
+              class="flex items-center justify-start gap-4 p-4 rounded-md bg-gray-100 hover:bg-gray-200 transition w-full"
+            >
+              <i
+                class="fa fa-user-circle text-xl text-gray-600 w-6 text-center"
+              ></i>
+              <span class="text-gray-800 font-medium">Edit Profil</span>
+            </router-link>
+
+            <router-link
+              :to="{ name: 'profile.password' }"
+              class="flex items-center justify-start gap-4 p-4 rounded-md bg-gray-100 hover:bg-gray-200 transition w-full"
+            >
+              <i class="fa fa-key text-xl text-gray-600 w-6 text-center"></i>
+              <span class="text-gray-800 font-medium">Ubah Password</span>
+            </router-link>
           </div>
         </div>
-        <div class="border-2 border-gray-200 mt-3 mb-2"></div>
 
-        <router-link :to="{ name: 'donation.index' }" class="block">
-          <div
-            class="grid grid-cols-5 gap-4 bg-gray-300 p-3 rounded-md shadow-sm mb-3"
+        <div class="pt-6 mt-6">
+          <a
+            @click="logout"
+            class="flex items-center justify-center gap-3 p-4 rounded-md bg-red-100 hover:bg-red-200 transition w-full cursor-pointer"
           >
-            <div class="col-span-5">
-              <i class="fa fa-heart" aria-hidden="true"></i> Donasi Saya
-            </div>
-          </div>
-        </router-link>
-
-        <router-link :to="{ name: 'profile' }" class="block">
-          <div
-            class="grid grid-cols-5 gap-4 bg-gray-300 p-3 rounded-md shadow-sm mb-3"
-          >
-            <div class="col-span-5">
-              <i class="fa fa-user-circle" aria-hidden="true"></i> Profile Saya
-            </div>
-          </div>
-        </router-link>
-
-        <router-link :to="{ name: 'profile.password' }" class="block">
-          <div
-            class="grid grid-cols-5 gap-4 bg-gray-300 p-3 rounded-md shadow-sm mb-3"
-          >
-            <div class="col-span-5">
-              <i class="fa fa-key" aria-hidden="true"></i> Ubah Password
-            </div>
-          </div>
-        </router-link>
-
-        <a @click="logout" style="cursor: pointer">
-          <div
-            class="grid grid-cols-5 gap-4 bg-gray-300 p-3 rounded-md shadow-sm mb-3"
-          >
-            <div class="col-span-5">
-              <i class="fa fa-sign-out-alt" aria-hidden="true"></i> Logout
-            </div>
-          </div>
-        </a>
+            <i class="fa fa-sign-out-alt text-xl text-red-600"></i>
+            <span class="text-red-700 font-medium">Logout</span>
+          </a>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-// ... sisa kode tidak berubah ...
+// Bagian script tidak perlu diubah
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 import { computed, onMounted } from "vue";
@@ -98,7 +89,6 @@ export default {
         if (user.value.avatar) {
           const LARAVEL_STORAGE_BASE_URL =
             "http://donasi-dm.test/storage/donaturs/";
-
           if (
             user.value.avatar.startsWith("http://") ||
             user.value.avatar.startsWith("https://")
