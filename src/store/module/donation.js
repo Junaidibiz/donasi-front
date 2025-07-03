@@ -27,6 +27,19 @@ const donation = {
       });
     },
 
+    // --- TAMBAHKAN MUTATION BARU DI SINI ---
+    UPDATE_DONATION_STATUS(state, updatedDonation) {
+      // Cari index donasi di dalam array state.donations berdasarkan invoice
+      const index = state.donations.findIndex(
+        (donation) => donation.invoice === updatedDonation.invoice
+      );
+
+      // Jika donasi ditemukan di dalam state, update statusnya
+      if (index !== -1) {
+        state.donations[index].status = updatedDonation.status;
+      }
+    },
+
     //set state nextExists
     SET_NEXTEXISTS(state, nextExists) {
       state.nextExists = nextExists;

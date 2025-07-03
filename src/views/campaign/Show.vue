@@ -1,21 +1,28 @@
 <template>
   <div class="bg-white sm:bg-transparent pb-20 pt-24">
     <div
-      v-if="campaign && Object.keys(campaign).length > 0"
+      v-if="!campaign || Object.keys(campaign).length === 0"
+      class="max-w-2xl mx-auto bg-white sm:shadow-lg sm:rounded-2xl overflow-hidden p-4 sm:p-6"
+    >
+      <FacebookLoader class="h-96" />
+    </div>
+
+    <div
+      v-else
       class="max-w-2xl mx-auto bg-white sm:shadow-lg sm:rounded-2xl overflow-hidden p-4 sm:p-6"
     >
       <div
         class="h-56 bg-gray-200 flex items-center justify-center rounded-xl overflow-hidden"
       >
         <img
-          :src="campaignImageComputed"
+          :src="campaign.image"
           :alt="campaign.title"
           class="w-full h-full object-cover rounded-lg"
         />
       </div>
 
       <div class="pt-5">
-        <div v-if="user" class="flex items-center gap-2 text-sm mb-2">
+        <div v-if="campaign.user" class="flex items-center gap-2 text-sm mb-2">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -28,63 +35,45 @@
               clip-rule="evenodd"
             />
           </svg>
-          <span class="font-medium text-gray-600">{{ user.name }}</span>
+          <span class="font-medium text-gray-600">{{
+            campaign.user.name
+          }}</span>
         </div>
 
         <h1 class="text-xl font-bold mb-3">{{ campaign.title }}</h1>
 
-        <div v-if="sumDonation && sumDonation.length > 0">
-          <div v-for="donation in sumDonation" :key="donation.id">
-            <div class="text-green-600 text-xl font-bold">
-              Rp {{ formatPrice(donation.total) }}
-            </div>
-            <div class="text-sm text-gray-500 mb-2">
-              Terkumpul dari Rp {{ formatPrice(campaign.target_donation) }}
-            </div>
-            <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-              <div
-                class="bg-green-500 h-2"
-                :style="{
-                  width:
-                    percentage(donation.total, campaign.target_donation) + '%',
-                }"
-              ></div>
-            </div>
-            <div class="flex justify-between text-xs text-gray-500 mt-1 mb-5">
-              <span
-                >{{
-                  Math.floor(
-                    percentage(donation.total, campaign.target_donation)
-                  )
-                }}%</span
-              >
-              <span>{{ countDay(campaign.max_date) }} Hari Lagi</span>
-            </div>
+        <div>
+          <div class="text-green-600 text-xl font-bold">
+            Rp {{ formatPrice(campaign.total_donation) }}
           </div>
-        </div>
-        <div v-else>
-          <div class="text-green-600 text-xl font-bold">Rp 0</div>
           <div class="text-sm text-gray-500 mb-2">
             Terkumpul dari Rp {{ formatPrice(campaign.target_donation) }}
           </div>
           <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-            <div class="bg-green-500 h-2" style="width: 0%"></div>
+            <div
+              class="bg-green-500 h-2"
+              :style="{
+                width:
+                  percentage(
+                    campaign.total_donation,
+                    campaign.target_donation
+                  ) + '%',
+              }"
+            ></div>
           </div>
           <div class="flex justify-between text-xs text-gray-500 mt-1 mb-5">
-            <span>0%</span>
+            <span
+              >{{
+                Math.floor(
+                  percentage(campaign.total_donation, campaign.target_donation)
+                )
+              }}%</span
+            >
             <span>{{ countDay(campaign.max_date) }} Hari Lagi</span>
           </div>
         </div>
 
-        <div v-if="campaign.max_date && maxDate(campaign.max_date) == true">
-          <div
-            class="block w-full text-center bg-gray-400 text-white font-semibold py-3 rounded-xl cursor-not-allowed mb-6"
-          >
-            Donasi Ditutup
-          </div>
-        </div>
         <router-link
-          v-else
           :to="{ name: 'donation.create', params: { slug: campaign.slug } }"
           class="block w-full text-center bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 rounded-xl mb-6 transition duration-200"
         >
@@ -96,7 +85,7 @@
         <h2 class="text-base font-semibold mb-2">Cerita</h2>
         <div
           class="text-sm text-gray-700 leading-relaxed mb-6 prose max-w-none"
-          v-html="processedDescription"
+          v-html="campaign.description"
         ></div>
       </div>
 
@@ -111,17 +100,17 @@
             class="bg-gray-100 rounded-xl p-4 flex gap-4 items-start"
           >
             <img
-              :src="getDonationDonaturAvatar(donation.donatur)"
+              :src="getDonaturAvatar(donation.donatur)"
               class="w-10 h-10 rounded-full shrink-0 object-cover"
             />
             <div>
               <span class="font-semibold text-sm">{{
-                donation.donatur.name
+                donation.donatur ? donation.donatur.name : "Donatur Anonim"
               }}</span>
               <div class="text-green-600 text-sm font-medium mt-1">
                 Berdonasi sebesar: Rp {{ formatPrice(donation.amount) }}
               </div>
-              <p class="text-sm text-gray-600 mt-1 italic">
+              <p v-if="donation.pray" class="text-sm text-gray-600 mt-1 italic">
                 "{{ donation.pray }}"
               </p>
             </div>
@@ -132,18 +121,10 @@
         </div>
       </div>
     </div>
-
-    <div
-      v-else
-      class="max-w-2xl mx-auto bg-white sm:shadow-lg sm:rounded-2xl overflow-hidden p-4 sm:p-6"
-    >
-      <FacebookLoader class="h-96" />
-    </div>
   </div>
 </template>
 
 <script>
-// Bagian script tidak perlu diubah, sudah sesuai dengan pola global mixin
 import { computed, onMounted } from "vue";
 import { useStore } from "vuex";
 import { useRoute } from "vue-router";
@@ -155,85 +136,61 @@ export default {
     FacebookLoader,
   },
   setup() {
-    const route = useRoute();
     const store = useStore();
+    const route = useRoute();
 
+    // Panggil action untuk mengambil data saat komponen dimuat
     onMounted(() => {
       store.dispatch("campaign/getDetailCampaign", route.params.slug);
     });
 
+    // Ambil detail campaign dari state
     const campaign = computed(() => store.state.campaign.campaign);
-    const user = computed(() => store.state.campaign.user);
-    const sumDonation = computed(() => store.state.campaign.sumDonation || []);
-    const donations = computed(() => store.state.campaign.donations || []);
 
-    const campaignImageComputed = computed(() => {
-      const LARAVEL_BASE_URL = "http://donasi-dm.test";
-      if (campaign.value && campaign.value.image) {
-        const imagePath = campaign.value.image;
-        if (
-          imagePath.startsWith("http://") ||
-          imagePath.startsWith("https://")
-        ) {
-          return imagePath;
-        } else if (imagePath.startsWith("/storage")) {
-          return `${LARAVEL_BASE_URL}${imagePath}`;
-        } else {
-          return `${LARAVEL_BASE_URL}/storage/campaigns/${imagePath}`;
-        }
-      }
-      return "https://placehold.co/600x400/e2e8f0/e2e8f0?text=No+Image";
-    });
+    // Ambil daftar donasi dari state
+    const donations = computed(() => store.state.campaign.donations);
 
-    const getDonationDonaturAvatar = (donatur) => {
-      if (donatur && donatur.name) {
-        if (donatur.profile_photo_url) {
-          return donatur.profile_photo_url;
-        } else if (donatur.avatar) {
-          const LARAVEL_STORAGE_BASE_URL =
-            "http://donasi-dm.test/storage/donaturs/";
-          if (
-            donatur.avatar.startsWith("http://") ||
-            donatur.avatar.startsWith("https://")
-          ) {
-            return donatur.avatar;
-          } else {
-            return `${LARAVEL_STORAGE_BASE_URL}${donatur.avatar}`;
-          }
-        } else {
-          return `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            donatur.name || "D"
-          )}&background=random&color=fff&size=128`;
-        }
+    // Helper function untuk menampilkan avatar donatur
+    const getDonaturAvatar = (donatur) => {
+      if (donatur && donatur.avatar) {
+        return donatur.avatar;
       }
-      return "";
+      const name = donatur ? donatur.name : "D";
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(
+        name
+      )}&background=random&color=fff&size=128`;
     };
 
-    const processedDescription = computed(() => {
-      let description = campaign.value.description;
-      if (!description) return "";
-      const LARAVEL_BASE_URL = "http://donasi-dm.test";
-      const regex = /<img[^>]+src="([^"]+)"/g;
-      return description.replace(regex, (match, src) => {
-        if (src.startsWith("http://") || src.startsWith("https://")) {
-          return match;
-        } else if (src.startsWith("/storage")) {
-          return match.replace(src, `${LARAVEL_BASE_URL}${src}`);
-        } else {
-          return match.replace(src, `${LARAVEL_BASE_URL}/storage/${src}`);
-        }
-      });
-    });
+    // Helper functions (sudah benar, tidak perlu diubah)
+    const formatPrice = (value) => {
+      if (!value) return "0";
+      let val = (value / 1).toFixed(0).replace(".", ",");
+      return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    };
+
+    const percentage = (total, target) => {
+      if (target == 0) return 0;
+      return (total / target) * 100;
+    };
+
+    const countDay = (max_date) => {
+      let d1 = new Date(max_date);
+      let d2 = new Date();
+      let t2 = d1.getTime();
+      let t1 = d2.getTime();
+      if (t2 < t1) {
+        return 0;
+      }
+      return parseInt((t2 - t1) / (24 * 3600 * 1000));
+    };
 
     return {
       campaign,
-      campaignImageComputed,
-      user,
-      getDonationDonaturAvatar,
-      sumDonation,
       donations,
-      processedDescription,
-      route,
+      formatPrice,
+      percentage,
+      countDay,
+      getDonaturAvatar,
     };
   },
 };

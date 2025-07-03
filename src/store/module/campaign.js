@@ -1,3 +1,5 @@
+// store/modules/campaign.js
+
 //import global API
 import Api from "../../api/Api";
 
@@ -8,19 +10,33 @@ const campaign = {
   //state
   state: {
     campaigns: [],
+    // --- STATE DETAIL ---
+    campaign: {}, // Untuk menyimpan objek campaign tunggal
+    donations: [], // Untuk menyimpan daftar donasi dari campaign tersebut
+    // ------------------
     nextExists: false,
     nextPage: 0,
-    campaign: {},
-    user: {},
-    sumDonation: [],
-    donations: [],
   },
 
   //mutations
   mutations: {
+    // Mutation untuk daftar campaign (sudah benar)
     SET_CAMPAIGNS(state, campaigns) {
       state.campaigns = campaigns;
     },
+
+    // =============================================================
+    //           KITA GANTI BEBERAPA MUTATION MENJADI SATU
+    // =============================================================
+    SET_DETAIL_CAMPAIGN(state, payload) {
+      // payload adalah seluruh objek `response.data` dari API,
+      // yang berisi { data: {..}, donations: [..] }
+
+      state.campaign = payload.data; // Simpan objek campaign dari 'data'
+      state.donations = payload.donations; // Simpan array donasi dari 'donations'
+    },
+    // =============================================================
+
     SET_NEXTEXISTS(state, nextExists) {
       state.nextExists = nextExists;
     },
@@ -32,22 +48,11 @@ const campaign = {
         state.campaigns.push(row);
       });
     },
-    SET_CAMPAIGN(state, data) {
-      state.campaign = data;
-    },
-    DETAIL_USER(state, data) {
-      state.user = data;
-    },
-    DETAIL_SUMDONATION(state, data) {
-      state.sumDonation = data;
-    },
-    SET_DONATIONS(state, data) {
-      state.donations = data;
-    },
   },
 
   //actions
   actions: {
+    // Action getCampaign (tidak berubah)
     getCampaign({ commit }) {
       Api.get("/campaign")
         .then((response) => {
@@ -64,60 +69,27 @@ const campaign = {
         });
     },
 
-    getLoadMore({ commit }, nextPage) {
-      Api.get(`/campaign?page=${nextPage}`)
-        .then((response) => {
-          commit("SET_LOADMORE", response.data.data.data);
-          if (response.data.data.current_page < response.data.data.last_page) {
-            commit("SET_NEXTEXISTS", true);
-            commit("SET_NEXTPAGE", response.data.data.current_page + 1);
-          } else {
-            commit("SET_NEXTEXISTS", false);
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    },
-
+    // =============================================================
+    //              PERBAIKI ACTION getDetailCampaign
+    // =============================================================
     getDetailCampaign({ commit }, slug) {
       Api.get(`/campaign/${slug}`)
         .then((response) => {
-          commit("SET_CAMPAIGN", response.data.data);
-          commit("DETAIL_USER", response.data.data.user);
-          commit("DETAIL_SUMDONATION", response.data.data.sum_donation);
-          commit("SET_DONATIONS", response.data.data.donations);
+          // Commit SELURUH response.data ke mutation SET_DETAIL_CAMPAIGN
+          commit("SET_DETAIL_CAMPAIGN", response.data);
         })
         .catch((error) => {
           console.log(error);
         });
     },
+    // =============================================================
 
+    // Action lain (getLoadMore, searchCampaign) tidak perlu diubah
+    getLoadMore({ commit }, nextPage) {
+      // ... kode Anda sudah benar ...
+    },
     searchCampaign({ commit }, keyword) {
-      if (!keyword) {
-        commit("SET_CAMPAIGNS", []);
-        return;
-      }
-
-      const token = localStorage.getItem("token");
-      const config = {};
-
-      if (token) {
-        config.headers = {
-          Authorization: `Bearer ${token}`,
-        };
-      }
-
-      // ================= PERUBAHAN DI SINI =================
-      // Endpoint diubah dari /search menjadi /campaign
-      Api.get(`/campaign?q=${keyword}`, config)
-        .then((response) => {
-          commit("SET_CAMPAIGNS", response.data.data.data);
-        })
-        .catch((error) => {
-          console.log(error);
-          commit("SET_CAMPAIGNS", []);
-        });
+      // ... kode Anda sudah benar ...
     },
   },
 

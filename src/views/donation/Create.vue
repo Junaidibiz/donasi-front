@@ -1,5 +1,5 @@
 <template>
-  <div class="pb-20 pt-24 bg-white">
+  <div class="pb-20 pt-24 bg-white min-h-screen">
     <div class="container mx-auto max-w-md p-4">
       <div class="space-y-6">
         <div class="flex items-center space-x-3">
@@ -91,6 +91,7 @@
 </template>
 
 <script>
+// Bagian script tidak perlu diubah
 import { reactive } from "vue";
 import { useStore } from "vuex";
 import { useRoute, useRouter } from "vue-router";
@@ -110,12 +111,10 @@ export default {
       campaignSlug: route.params.slug,
     });
 
-    // --- FUNGSI BARU UNTUK TOMBOL NOMINAL ---
     function isiNominal(value) {
       donation.amount = value;
     }
 
-    // --- FUNGSI BARU UNTUK TOMBOL KEMBALI ---
     function goBack() {
       router.go(-1);
     }
@@ -155,8 +154,8 @@ export default {
     return {
       donation,
       storeDonation,
-      isiNominal, // <-- Jangan lupa di-return
-      goBack, // <-- Jangan lupa di-return
+      isiNominal,
+      goBack,
     };
   },
 };
