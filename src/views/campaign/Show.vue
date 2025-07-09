@@ -62,18 +62,27 @@
             ></div>
           </div>
           <div class="flex justify-between text-xs text-gray-500 mt-1 mb-5">
-            <span
+            <span class="text-green-600"
               >{{
                 Math.floor(
                   percentage(campaign.total_donation, campaign.target_donation)
                 )
-              }}%</span
+              }}% Target Tercapai</span
             >
             <span>{{ countDay(campaign.max_date) }} Hari Lagi</span>
           </div>
         </div>
 
+        <div v-if="countDay(campaign.max_date) === 0">
+          <div
+            class="block w-full text-center bg-gray-400 text-white font-semibold py-3 rounded-xl cursor-not-allowed mb-6"
+          >
+            Donasi Ditutup
+          </div>
+        </div>
+
         <router-link
+          v-else
           :to="{ name: 'donation.create', params: { slug: campaign.slug } }"
           class="block w-full text-center bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 rounded-xl mb-6 transition duration-200"
         >
@@ -139,18 +148,13 @@ export default {
     const store = useStore();
     const route = useRoute();
 
-    // Panggil action untuk mengambil data saat komponen dimuat
     onMounted(() => {
       store.dispatch("campaign/getDetailCampaign", route.params.slug);
     });
 
-    // Ambil detail campaign dari state
     const campaign = computed(() => store.state.campaign.campaign);
-
-    // Ambil daftar donasi dari state
     const donations = computed(() => store.state.campaign.donations);
 
-    // Helper function untuk menampilkan avatar donatur
     const getDonaturAvatar = (donatur) => {
       if (donatur && donatur.avatar) {
         return donatur.avatar;
@@ -161,7 +165,6 @@ export default {
       )}&background=random&color=fff&size=128`;
     };
 
-    // Helper functions (sudah benar, tidak perlu diubah)
     const formatPrice = (value) => {
       if (!value) return "0";
       let val = (value / 1).toFixed(0).replace(".", ",");
@@ -169,11 +172,12 @@ export default {
     };
 
     const percentage = (total, target) => {
-      if (target == 0) return 0;
+      if (!target || target == 0) return 0;
       return (total / target) * 100;
     };
 
     const countDay = (max_date) => {
+      if (!max_date) return 0;
       let d1 = new Date(max_date);
       let d2 = new Date();
       let t2 = d1.getTime();

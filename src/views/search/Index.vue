@@ -99,7 +99,7 @@
         </div>
       </div>
       <div v-else>
-        <div class="mb-3 bg-red-500 text-white p-4 rounded-md">
+        <div class="mb-3 bg-blue-100 text-blue-900 p-4 rounded-md">
           Ketik untuk mencari campaign...
         </div>
       </div>
