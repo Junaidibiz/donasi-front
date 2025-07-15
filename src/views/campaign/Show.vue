@@ -94,7 +94,7 @@
         <h2 class="text-base font-semibold mb-2">Cerita</h2>
         <div
           class="text-sm text-gray-700 leading-relaxed mb-6 prose max-w-none"
-          v-html="campaign.description"
+          v-html="processedDescription"
         ></div>
       </div>
 
@@ -155,6 +155,30 @@ export default {
     const campaign = computed(() => store.state.campaign.campaign);
     const donations = computed(() => store.state.campaign.donations);
 
+    // =======================================================
+    //     TAMBAHKAN COMPUTED PROPERTY BARU DI SINI
+    // =======================================================
+    const processedDescription = computed(() => {
+      if (!campaign.value.description) return "";
+
+      const descriptionHtml = campaign.value.description;
+      const backendUrl = "http://donasi-dm.test"; // URL backend Anda
+
+      // Fungsi ini akan mencari semua tag <img> dan memperbaiki src-nya
+      return descriptionHtml.replace(
+        /<img[^>]+src="([^"]+)"/g,
+        (match, src) => {
+          // Jika src sudah merupakan URL lengkap, biarkan saja
+          if (src.startsWith("http")) {
+            return match;
+          }
+          // Jika src adalah path relatif, gabungkan dengan URL backend
+          return match.replace(src, `${backendUrl}${src}`);
+        }
+      );
+    });
+    // =======================================================
+
     const getDonaturAvatar = (donatur) => {
       if (donatur && donatur.avatar) {
         return donatur.avatar;
@@ -180,17 +204,14 @@ export default {
       if (!max_date) return 0;
       let d1 = new Date(max_date);
       let d2 = new Date();
-      let t2 = d1.getTime();
-      let t1 = d2.getTime();
-      if (t2 < t1) {
-        return 0;
-      }
-      return parseInt((t2 - t1) / (24 * 3600 * 1000));
+      if (d1 < d2) return 0;
+      return parseInt((d1 - d2) / (1000 * 60 * 60 * 24));
     };
 
     return {
       campaign,
       donations,
+      processedDescription, // <-- Jangan lupa return agar bisa dipakai di template
       formatPrice,
       percentage,
       countDay,
