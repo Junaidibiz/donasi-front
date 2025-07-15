@@ -52,8 +52,7 @@
 </template>
 
 <script>
-// Bagian script tidak perlu diubah
-import { ref, reactive, onMounted } from "vue";
+import { reactive, onMounted } from "vue";
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
@@ -66,34 +65,46 @@ export default {
       password: "",
     });
 
-    const validation = ref([]);
     const store = useStore();
     const router = useRouter();
     const toast = useToast();
 
     function login() {
-      let email = user.email;
-      let password = user.password;
-
       store
         .dispatch("auth/login", {
-          email,
-          password,
+          email: user.email,
+          password: user.password,
         })
         .then(() => {
-          router.push({ name: "dashboard" });
           toast.success("Login Berhasil!");
+
+          // =============================================================
+          //                      PERBAIKAN DI SINI
+          // =============================================================
+
+          // 1. Ambil URL yang disimpan dari localStorage
+          const intendedUrl = localStorage.getItem("intended_url");
+
+          if (intendedUrl) {
+            // 2. Jika ada, hapus dari localStorage agar tidak digunakan lagi
+            localStorage.removeItem("intended_url");
+
+            // 3. Arahkan pengguna ke halaman yang diinginkan (halaman donasi)
+            router.push(intendedUrl);
+          } else {
+            // 4. Jika tidak ada, arahkan ke halaman default (dashboard/beranda)
+            router.push({ name: "dashboard" });
+          }
+          // =============================================================
         })
         .catch((error) => {
-          validation.value = error;
-          if (validation.value.email) {
-            toast.error(`${validation.value.email[0]}`);
-          }
-          if (validation.value.password) {
-            toast.error(`${validation.value.password[0]}`);
-          }
-          if (validation.value.message) {
-            toast.error(`${validation.value.message}`);
+          // Logika error Anda sudah benar
+          if (error.email) {
+            toast.error(`${error.email[0]}`);
+          } else if (error.password) {
+            toast.error(`${error.password[0]}`);
+          } else if (error.message) {
+            toast.error(`${error.message}`);
           }
         });
     }
@@ -106,7 +117,6 @@ export default {
 
     return {
       user,
-      validation,
       login,
     };
   },

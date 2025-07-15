@@ -105,11 +105,10 @@ const routes = [
         /* webpackChunkName: "donationCreate" */ "../views/donation/Create.vue"
       ),
     meta: {
-      requiresAuth: true,
+      requiresAuth: true, // <-- Route ini sudah ditandai dengan benar
     },
   },
   {
-    // <-- Rute baru untuk halaman pencarian
     path: "/search",
     name: "search",
     component: () =>
@@ -123,17 +122,28 @@ const router = createRouter({
   routes, // <-- routes
 });
 
-// Define route for handle authentication
+// =============================================================
+//                      PERBAIKAN DI SINI
+// =============================================================
 router.beforeEach((to, from, next) => {
+  // Cek jika route yang dituju memerlukan otentikasi
   if (to.matched.some((record) => record.meta.requiresAuth)) {
-    if (store.getters["auth/isLoggedIn"]) {
+    // Jika pengguna BELUM login
+    if (!store.getters["auth/isLoggedIn"]) {
+      // Simpan URL yang ingin dituju ke localStorage
+      localStorage.setItem("intended_url", to.fullPath);
+
+      // Arahkan ke halaman login
+      next("/login");
+    } else {
+      // Jika SUDAH login, biarkan pengguna melanjutkan
       next();
-      return;
     }
-    next("/login");
   } else {
+    // Jika route tidak memerlukan otentikasi, biarkan saja
     next();
   }
 });
+// =============================================================
 
 export default router;
