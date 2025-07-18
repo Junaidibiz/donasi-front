@@ -31,6 +31,15 @@
               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:outline-none"
             />
           </div>
+
+          <div class="text-right">
+            <router-link
+              :to="{ name: 'forgot-password' }"
+              class="text-sm text-gray-600 hover:text-gray-800 hover:underline"
+            >
+              Lupa Password?
+            </router-link>
+          </div>
           <button
             type="submit"
             class="w-full bg-gray-800 hover:bg-gray-900 text-white font-semibold py-3 rounded-lg transition duration-200"

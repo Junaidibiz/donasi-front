@@ -114,6 +114,18 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "search" */ "../views/search/Index.vue"),
   },
+
+  // --- TAMBAHKAN ROUTE BARU DI SINI ---
+  {
+    path: "/forgot-password",
+    name: "forgot-password",
+    component: () => import("@/views/auth/ForgotPassword.vue"),
+  },
+  {
+    path: "/reset-password", // tidak perlu /:token karena kita pakai query param
+    name: "reset-password",
+    component: () => import("@/views/auth/ResetPassword.vue"),
+  },
 ];
 
 // Create router
