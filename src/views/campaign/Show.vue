@@ -125,7 +125,6 @@
             <div
               v-for="donation in donations"
               :key="donation.id"
-              v-if="donation.donatur"
               class="bg-gray-100 rounded-xl p-4 flex gap-4 items-start"
             >
               <img
@@ -202,8 +201,6 @@ export default {
   setup() {
     const store = useStore();
     const route = useRoute();
-
-    // State untuk mengontrol tab yang aktif
     const activeTab = ref("donasi");
 
     onMounted(() => {
@@ -211,8 +208,17 @@ export default {
     });
 
     const campaign = computed(() => store.state.campaign.campaign);
-    const donations = computed(() => store.state.campaign.donations || []);
-    // Computed property baru untuk mengambil data laporan
+
+    // =============================================================
+    //                      PERBAIKAN UTAMA DI SINI
+    // =============================================================
+    const donations = computed(() => {
+      const allDonations = store.state.campaign.donations || [];
+      // Filter array untuk memastikan hanya donasi yang memiliki data donatur yang valid
+      return allDonations.filter((d) => d && d.donatur && d.donatur.name);
+    });
+    // =============================================================
+
     const expenseReports = computed(
       () => store.state.campaign.expenseReports || []
     );
@@ -220,7 +226,7 @@ export default {
     const processedDescription = computed(() => {
       if (!campaign.value.description) return "";
       const descriptionHtml = campaign.value.description;
-      const backendUrl = "http://donasi-dm.test"; // URL backend Anda
+      const backendUrl = "http://donasi-dm.test";
       return descriptionHtml.replace(
         /<img[^>]+src="([^"]+)"/g,
         (match, src) => {
@@ -248,7 +254,6 @@ export default {
       return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     };
 
-    // Fungsi baru untuk format tanggal laporan
     const formatDate = (dateString) => {
       if (!dateString) return "";
       const options = {
@@ -276,11 +281,11 @@ export default {
     return {
       campaign,
       donations,
-      expenseReports, // <-- Return data laporan
-      activeTab, // <-- Return state tab
+      expenseReports,
+      activeTab,
       processedDescription,
       formatPrice,
-      formatDate, // <-- Return fungsi format tanggal
+      formatDate,
       percentage,
       countDay,
       getDonaturAvatar,
