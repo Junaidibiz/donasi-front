@@ -352,23 +352,30 @@
 
         <div v-if="activeTab === 'laporan'">
           <div
-            v-if="expenseReports && expenseReports.length > 0"
+            v-if="processedExpenseReports && processedExpenseReports.length > 0"
             class="space-y-4"
           >
             <div
-              v-for="report in expenseReports"
+              v-for="report in processedExpenseReports"
               :key="report.id"
               class="bg-gray-100 rounded-xl p-4"
             >
-              <p class="font-semibold text-sm mb-1">
-                {{ formatDate(report.expense_date) }}
+              <p class="font-bold text-base mb-1">
+                {{ report.title }}
               </p>
-              <p class="font-bold text-xs">
-                Dana Pengeluaran:
-                <span class="text-red-600"
-                  >- Rp {{ formatPrice(report.amount) }}</span
-                >
-              </p>
+              <div
+                class="flex justify-between items-center text-xs text-gray-600 mb-2"
+              >
+                <p class="font-semibold">
+                  {{ formatDate(report.expense_date) }}
+                </p>
+                <p class="font-bold">
+                  Dana Pengeluaran:
+                  <span class="text-red-600"
+                    >- Rp {{ formatPrice(report.amount) }}</span
+                  >
+                </p>
+              </div>
               <hr class="my-2 border-gray-300" />
               <div
                 class="text-sm text-gray-700 leading-relaxed prose max-w-none break-words"
@@ -401,6 +408,7 @@ export default {
     const store = useStore();
     const route = useRoute();
     const activeTab = ref("donasi");
+    const LARAVEL_BASE_URL = "http://donasi-dm.test";
 
     onMounted(() => {
       store.dispatch("campaign/getDetailCampaign", route.params.slug);
@@ -417,6 +425,19 @@ export default {
       () => store.state.campaign.expenseReports || []
     );
 
+    const processedExpenseReports = computed(() => {
+      return expenseReports.value.map((report) => {
+        const processedDescription = report.description.replace(
+          /src="\/storage\//g,
+          `src="${LARAVEL_BASE_URL}/storage/`
+        );
+        return {
+          ...report,
+          description: processedDescription,
+        };
+      });
+    });
+
     const {
       shareToFacebook,
       shareToTwitter,
@@ -428,14 +449,13 @@ export default {
     const processedDescription = computed(() => {
       if (!campaign.value.description) return "";
       const descriptionHtml = campaign.value.description;
-      const backendUrl = "http://donasi-dm.test";
       return descriptionHtml.replace(
         /<img[^>]+src="([^"]+)"/g,
         (match, src) => {
           if (src.startsWith("http")) {
             return match;
           }
-          return match.replace(src, `${backendUrl}${src}`);
+          return match.replace(src, `${LARAVEL_BASE_URL}${src}`);
         }
       );
     });
@@ -482,7 +502,7 @@ export default {
     return {
       campaign,
       donations,
-      expenseReports,
+      processedExpenseReports,
       activeTab,
       processedDescription,
       formatPrice,

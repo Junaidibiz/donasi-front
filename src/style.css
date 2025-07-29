@@ -30,3 +30,11 @@
 
   /* ... dan seterusnya untuk semua warna ... */
 }
+
+/* ========================================================= */
+/* TAMBAHKAN KODE CSS DI BAWAH INI                      */
+/* ========================================================= */
+/* Sembunyikan caption (nama & ukuran file) dari Trix di frontend */
+.prose .attachment__caption {
+  display: none;
+}

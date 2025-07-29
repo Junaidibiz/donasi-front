@@ -11,7 +11,7 @@ const campaign = {
     campaigns: [],
     campaign: {},
     donations: [],
-    expenseReports: [],
+    expenseReports: [], // <-- State untuk laporan pengeluaran
     nextExists: false,
     nextPage: 0,
   },
@@ -21,21 +21,24 @@ const campaign = {
     SET_CAMPAIGNS(state, campaigns) {
       state.campaigns = campaigns;
     },
-    // PERBAIKAN UTAMA ADA DI SINI
+
+    // =========================================================
+    //                PERBAIKAN UTAMA ADA DI SINI
+    // =========================================================
     SET_DETAIL_CAMPAIGN(state, campaignData) {
-      // Pastikan campaignData ada isinya
       if (campaignData) {
         state.campaign = campaignData;
-        // Ambil data relasi dari DALAM objek campaignData
         state.donations = campaignData.donations || [];
+        // Pastikan kita juga mengambil expense_reports dari data API
         state.expenseReports = campaignData.expense_reports || [];
       } else {
-        // Jika data kosong, reset state untuk mencegah error
+        // Jika data kosong, reset semua state terkait
         state.campaign = {};
         state.donations = [];
         state.expenseReports = [];
       }
     },
+
     SET_NEXTEXISTS(state, nextExists) {
       state.nextExists = nextExists;
     },
@@ -66,12 +69,10 @@ const campaign = {
     getDetailCampaign({ commit }, slug) {
       Api.get(`/campaign/${slug}`)
         .then((response) => {
-          // Kirim seluruh objek "data" dari API ke mutasi
           commit("SET_DETAIL_CAMPAIGN", response.data.data);
         })
         .catch((error) => {
           console.log(error);
-          // Jika API error, kirim payload kosong
           commit("SET_DETAIL_CAMPAIGN", null);
         });
     },
