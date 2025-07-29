@@ -7,11 +7,11 @@
         <div
           v-for="category in categories"
           :key="category.id"
-          class="col-span-2 md:col-span-2 lg:col-span-1 bg-white rounded-md shadow-md p-4 text-center text-xs"
+          class="col-span-2 md:col-span-2 lg:col-span-1 bg-white rounded-md shadow-md p-4 text-center text-xs h-28"
         >
-          <!-- Link ke detail kategori -->
           <router-link
             :to="{ name: 'category.show', params: { slug: category.slug } }"
+            class="flex flex-col items-center justify-center h-full"
           >
             <div>
               <img
@@ -23,12 +23,13 @@
             {{ category.name.toUpperCase() }}
           </router-link>
         </div>
-        <!-- Card "LAINNYA" - UBAH INI -->
         <div
-          class="col-span-2 md:col-span-1 lg:col-span-1 bg-white rounded-md shadow-md p-4 text-center text-xs"
+          class="col-span-2 md:col-span-1 lg:col-span-1 bg-white rounded-md shadow-md p-4 text-center text-xs h-28"
         >
-          <!-- UBAH INI MENJADI router-link ke halaman index kategori -->
-          <router-link :to="{ name: 'category.index' }">
+          <router-link
+            :to="{ name: 'category.index' }"
+            class="flex flex-col items-center justify-center h-full"
+          >
             <div>
               <img
                 src="../assets/images/menu.png"
@@ -42,7 +43,6 @@
       </div>
     </div>
     <div v-else>
-      <!-- Loading block for categories -->
       <div
         class="mt-5 grid grid-cols-4 gap-4 md:gap-4 text-center items-center"
       >

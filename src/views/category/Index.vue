@@ -6,11 +6,11 @@
           <div
             v-for="category in categories"
             :key="category.id"
-            class="col-span-2 md:col-span-2 lg:col-span-2 bg-white rounded-md shadow-md p-4 text-center text-xs"
+            class="col-span-2 md:col-span-2 lg:col-span-2 bg-white rounded-md shadow-md p-4 text-center text-xs h-28"
           >
-            <!-- Link to category detail -->
             <router-link
               :to="{ name: 'category.show', params: { slug: category.slug } }"
+              class="flex flex-col items-center justify-center h-full"
             >
               <div>
                 <img
@@ -25,7 +25,6 @@
         </div>
       </div>
       <div v-else>
-        <!-- Loading block for categories -->
         <div
           class="mt-5 grid grid-cols-4 gap-4 md:gap-4 text-center items-center"
         >
@@ -50,20 +49,17 @@ import { ContentLoader } from "vue-content-loader";
 export default {
   name: "CategoryIndexComponent",
   components: {
-    ContentLoader, // Register content loader
+    ContentLoader,
   },
   setup() {
     const store = useStore();
-    // onMounted will run "getCategory" action in "category" module
     onMounted(() => {
       store.dispatch("category/getCategory");
     });
 
-    // Used to get "categories" state data in "category" module
     const categories = computed(() => {
-      // Map category data to add imageComputed property
       return store.state.category.categories.map((category) => {
-        const LARAVEL_BASE_URL = "http://donasi-dm.test"; // ADJUST THIS WITH YOUR BACKEND DOMAIN BASE URL
+        const LARAVEL_BASE_URL = "http://donasi-dm.test";
 
         let imageUrl;
         if (
@@ -75,8 +71,7 @@ export default {
           if (category.image.startsWith("/storage")) {
             imageUrl = `${LARAVEL_BASE_URL}${category.image}`;
           } else {
-            // Assume path in database is relative to public/storage/ (e.g. 'category_icons/icon.png')
-            imageUrl = `${LARAVEL_BASE_URL}/storage/category_icons/${category.image}`; // Adjust folder if different
+            imageUrl = `${LARAVEL_BASE_URL}/storage/category_icons/${category.image}`;
           }
         }
 
@@ -88,12 +83,12 @@ export default {
     });
 
     return {
-      categories, // Return categories state
+      categories,
     };
   },
 };
 </script>
 
 <style>
-/* You can add custom styles here if needed, or leave it empty if fully using Tailwind */
+/* Anda dapat menambahkan style kustom di sini jika diperlukan */
 </style>
