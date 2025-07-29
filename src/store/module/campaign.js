@@ -1,6 +1,5 @@
-// store/modules/campaign.js
+// src/store/module/campaign.js
 
-//import global API
 import Api from "../../api/Api";
 
 const campaign = {
@@ -12,6 +11,7 @@ const campaign = {
     campaigns: [],
     campaign: {},
     donations: [],
+    expenseReports: [],
     nextExists: false,
     nextPage: 0,
   },
@@ -21,9 +21,20 @@ const campaign = {
     SET_CAMPAIGNS(state, campaigns) {
       state.campaigns = campaigns;
     },
-    SET_DETAIL_CAMPAIGN(state, payload) {
-      state.campaign = payload.data;
-      state.donations = payload.donations;
+    // Mutasi ini akan menerima seluruh objek campaign yang sudah lengkap
+    SET_DETAIL_CAMPAIGN(state, campaignData) {
+      // Pastikan campaignData ada isinya (tidak null)
+      if (campaignData) {
+        state.campaign = campaignData;
+        // Ambil data relasi dari DALAM objek campaignData
+        state.donations = campaignData.donations || [];
+        state.expenseReports = campaignData.expense_reports || [];
+      } else {
+        // Jika data kosong (misal karena API error), reset state
+        state.campaign = {};
+        state.donations = [];
+        state.expenseReports = [];
+      }
     },
     SET_NEXTEXISTS(state, nextExists) {
       state.nextExists = nextExists;
@@ -41,45 +52,40 @@ const campaign = {
   //actions
   actions: {
     getCampaign({ commit }) {
-      Api.get("/campaign")
-        .then((response) => {
-          commit("SET_CAMPAIGNS", response.data.data.data);
-          if (response.data.data.current_page < response.data.data.last_page) {
-            commit("SET_NEXTEXISTS", true);
-            commit("SET_NEXTPAGE", response.data.data.current_page + 1);
-          } else {
-            commit("SET_NEXTEXISTS", false);
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      Api.get("/campaign").then((response) => {
+        commit("SET_CAMPAIGNS", response.data.data.data);
+        if (response.data.data.current_page < response.data.data.last_page) {
+          commit("SET_NEXTEXISTS", true);
+          commit("SET_NEXTPAGE", response.data.data.current_page + 1);
+        } else {
+          commit("SET_NEXTEXISTS", false);
+        }
+      });
     },
 
     getDetailCampaign({ commit }, slug) {
       Api.get(`/campaign/${slug}`)
         .then((response) => {
-          commit("SET_DETAIL_CAMPAIGN", response.data);
+          // Kirim seluruh objek "data" dari API ke mutasi
+          commit("SET_DETAIL_CAMPAIGN", response.data.data);
         })
         .catch((error) => {
           console.log(error);
+          // Jika API error, kirim payload null agar tidak crash
+          commit("SET_DETAIL_CAMPAIGN", null);
         });
     },
 
     getLoadMore({ commit }, nextPage) {
-      Api.get(`/campaign?page=${nextPage}`)
-        .then((response) => {
-          commit("SET_LOADMORE", response.data.data.data);
-          if (response.data.data.current_page < response.data.data.last_page) {
-            commit("SET_NEXTEXISTS", true);
-            commit("SET_NEXTPAGE", response.data.data.current_page + 1);
-          } else {
-            commit("SET_NEXTEXISTS", false);
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      Api.get(`/campaign?page=${nextPage}`).then((response) => {
+        commit("SET_LOADMORE", response.data.data.data);
+        if (response.data.data.current_page < response.data.data.last_page) {
+          commit("SET_NEXTEXISTS", true);
+          commit("SET_NEXTPAGE", response.data.data.current_page + 1);
+        } else {
+          commit("SET_NEXTEXISTS", false);
+        }
+      });
     },
 
     searchCampaign({ commit }, keyword) {

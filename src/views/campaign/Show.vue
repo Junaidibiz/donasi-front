@@ -36,12 +36,10 @@
             />
           </svg>
           <span class="font-medium text-gray-600">{{
-            campaign.user.name
+            campaign.user?.name
           }}</span>
         </div>
-
         <h1 class="text-xl font-bold mb-3">{{ campaign.title }}</h1>
-
         <div>
           <div class="text-green-600 text-xl font-bold">
             Rp {{ formatPrice(campaign.total_donation) }}
@@ -72,7 +70,6 @@
             <span>{{ countDay(campaign.max_date) }} Hari Lagi</span>
           </div>
         </div>
-
         <div v-if="countDay(campaign.max_date) === 0">
           <div
             class="block w-full text-center bg-gray-400 text-white font-semibold py-3 rounded-xl cursor-not-allowed mb-6"
@@ -80,7 +77,6 @@
             Donasi Ditutup
           </div>
         </div>
-
         <router-link
           v-else
           :to="{ name: 'donation.create', params: { slug: campaign.slug } }"
@@ -93,40 +89,99 @@
       <div>
         <h2 class="text-base font-semibold mb-2">Cerita</h2>
         <div
-          class="text-sm text-gray-700 leading-relaxed mb-6 prose max-w-none"
+          class="text-sm text-gray-700 leading-relaxed mb-6 prose max-w-none break-words"
           v-html="processedDescription"
         ></div>
       </div>
 
       <div class="pb-6">
-        <h2 class="text-base font-semibold mb-3">
-          Donasi ({{ donations.length }})
-        </h2>
-        <div v-if="donations.length > 0" class="space-y-4">
-          <div
-            v-for="donation in donations"
-            :key="donation.id"
-            class="bg-gray-100 rounded-xl p-4 flex gap-4 items-start"
+        <div class="flex border-b mb-4">
+          <button
+            @click="activeTab = 'donasi'"
+            :class="[
+              'flex-grow py-2 text-center font-semibold focus:outline-none transition-colors duration-300',
+              activeTab === 'donasi'
+                ? 'border-b-2 border-green-500 text-green-600'
+                : 'text-gray-500',
+            ]"
           >
-            <img
-              :src="getDonaturAvatar(donation.donatur)"
-              class="w-10 h-10 rounded-full shrink-0 object-cover"
-            />
-            <div>
-              <span class="font-semibold text-sm">{{
-                donation.donatur ? donation.donatur.name : "Donatur Anonim"
-              }}</span>
-              <div class="text-green-600 text-sm font-medium mt-1">
-                Berdonasi sebesar: Rp {{ formatPrice(donation.amount) }}
+            Donasi ({{ donations.length }})
+          </button>
+          <button
+            @click="activeTab = 'laporan'"
+            :class="[
+              'flex-grow py-2 text-center font-semibold focus:outline-none transition-colors duration-300',
+              activeTab === 'laporan'
+                ? 'border-b-2 border-green-500 text-green-600'
+                : 'text-gray-500',
+            ]"
+          >
+            Laporan Pengeluaran
+          </button>
+        </div>
+
+        <div v-if="activeTab === 'donasi'">
+          <div v-if="donations.length > 0" class="space-y-4">
+            <div
+              v-for="donation in donations"
+              :key="donation.id"
+              v-if="donation.donatur"
+              class="bg-gray-100 rounded-xl p-4 flex gap-4 items-start"
+            >
+              <img
+                :src="getDonaturAvatar(donation.donatur)"
+                class="w-10 h-10 rounded-full shrink-0 object-cover"
+              />
+              <div>
+                <span class="font-semibold text-sm">{{
+                  donation.donatur.name
+                }}</span>
+                <div class="text-green-600 text-sm font-medium mt-1">
+                  Berdonasi sebesar: Rp {{ formatPrice(donation.amount) }}
+                </div>
+                <p
+                  v-if="donation.pray"
+                  class="text-sm text-gray-600 mt-1 italic"
+                >
+                  "{{ donation.pray }}"
+                </p>
               </div>
-              <p v-if="donation.pray" class="text-sm text-gray-600 mt-1 italic">
-                "{{ donation.pray }}"
-              </p>
             </div>
           </div>
+          <div v-else class="text-center text-sm text-gray-500 py-4">
+            Jadilah orang pertama yang berdonasi di campaign ini!
+          </div>
         </div>
-        <div v-else class="text-center text-sm text-gray-500 py-4">
-          Jadilah orang pertama yang berdonasi di campaign ini!
+
+        <div v-if="activeTab === 'laporan'">
+          <div
+            v-if="expenseReports && expenseReports.length > 0"
+            class="space-y-4"
+          >
+            <div
+              v-for="report in expenseReports"
+              :key="report.id"
+              class="bg-gray-100 rounded-xl p-4"
+            >
+              <p class="font-semibold text-sm mb-1">
+                {{ formatDate(report.expense_date) }}
+              </p>
+              <p class="font-bold text-xs">
+                Dana Pengeluaran:
+                <span class="text-red-600"
+                  >- Rp {{ formatPrice(report.amount) }}</span
+                >
+              </p>
+              <hr class="my-2 border-gray-300" />
+              <div
+                class="text-sm text-gray-700 leading-relaxed prose max-w-none break-words"
+                v-html="report.description"
+              ></div>
+            </div>
+          </div>
+          <div v-else class="text-center text-sm text-gray-500 py-4">
+            Belum ada laporan penggunaan dana untuk campaign ini.
+          </div>
         </div>
       </div>
     </div>
@@ -134,7 +189,7 @@
 </template>
 
 <script>
-import { computed, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useStore } from "vuex";
 import { useRoute } from "vue-router";
 import { FacebookLoader } from "vue-content-loader";
@@ -148,36 +203,34 @@ export default {
     const store = useStore();
     const route = useRoute();
 
+    // State untuk mengontrol tab yang aktif
+    const activeTab = ref("donasi");
+
     onMounted(() => {
       store.dispatch("campaign/getDetailCampaign", route.params.slug);
     });
 
     const campaign = computed(() => store.state.campaign.campaign);
-    const donations = computed(() => store.state.campaign.donations);
+    const donations = computed(() => store.state.campaign.donations || []);
+    // Computed property baru untuk mengambil data laporan
+    const expenseReports = computed(
+      () => store.state.campaign.expenseReports || []
+    );
 
-    // =======================================================
-    //     TAMBAHKAN COMPUTED PROPERTY BARU DI SINI
-    // =======================================================
     const processedDescription = computed(() => {
       if (!campaign.value.description) return "";
-
       const descriptionHtml = campaign.value.description;
       const backendUrl = "http://donasi-dm.test"; // URL backend Anda
-
-      // Fungsi ini akan mencari semua tag <img> dan memperbaiki src-nya
       return descriptionHtml.replace(
         /<img[^>]+src="([^"]+)"/g,
         (match, src) => {
-          // Jika src sudah merupakan URL lengkap, biarkan saja
           if (src.startsWith("http")) {
             return match;
           }
-          // Jika src adalah path relatif, gabungkan dengan URL backend
           return match.replace(src, `${backendUrl}${src}`);
         }
       );
     });
-    // =======================================================
 
     const getDonaturAvatar = (donatur) => {
       if (donatur && donatur.avatar) {
@@ -193,6 +246,18 @@ export default {
       if (!value) return "0";
       let val = (value / 1).toFixed(0).replace(".", ",");
       return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    };
+
+    // Fungsi baru untuk format tanggal laporan
+    const formatDate = (dateString) => {
+      if (!dateString) return "";
+      const options = {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      };
+      return new Date(dateString).toLocaleDateString("id-ID", options);
     };
 
     const percentage = (total, target) => {
@@ -211,8 +276,11 @@ export default {
     return {
       campaign,
       donations,
-      processedDescription, // <-- Jangan lupa return agar bisa dipakai di template
+      expenseReports, // <-- Return data laporan
+      activeTab, // <-- Return state tab
+      processedDescription,
       formatPrice,
+      formatDate, // <-- Return fungsi format tanggal
       percentage,
       countDay,
       getDonaturAvatar,
