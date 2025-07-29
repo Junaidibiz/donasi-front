@@ -21,16 +21,16 @@ const campaign = {
     SET_CAMPAIGNS(state, campaigns) {
       state.campaigns = campaigns;
     },
-    // Mutasi ini akan menerima seluruh objek campaign yang sudah lengkap
+    // PERBAIKAN UTAMA ADA DI SINI
     SET_DETAIL_CAMPAIGN(state, campaignData) {
-      // Pastikan campaignData ada isinya (tidak null)
+      // Pastikan campaignData ada isinya
       if (campaignData) {
         state.campaign = campaignData;
         // Ambil data relasi dari DALAM objek campaignData
         state.donations = campaignData.donations || [];
         state.expenseReports = campaignData.expense_reports || [];
       } else {
-        // Jika data kosong (misal karena API error), reset state
+        // Jika data kosong, reset state untuk mencegah error
         state.campaign = {};
         state.donations = [];
         state.expenseReports = [];
@@ -71,7 +71,7 @@ const campaign = {
         })
         .catch((error) => {
           console.log(error);
-          // Jika API error, kirim payload null agar tidak crash
+          // Jika API error, kirim payload kosong
           commit("SET_DETAIL_CAMPAIGN", null);
         });
     },
