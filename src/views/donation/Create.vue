@@ -65,16 +65,32 @@
             <label class="block text-sm text-gray-600 mb-1"
               >Tulis Do'a (Opsional)</label
             >
-            <div
-              class="flex items-center px-4 py-3 bg-gray-100 rounded-lg text-gray-500"
-            >
-              <span class="mr-2">📝</span>
-              <textarea
-                v-model="donation.pray"
-                rows="2"
-                placeholder="Tulis Do'a / Ucapan"
-                class="bg-transparent outline-none w-full resize-none"
-              ></textarea>
+            <textarea
+              v-model="donation.pray"
+              rows="3"
+              placeholder="Tulis Do'a / Ucapan Anda di sini..."
+              class="bg-gray-100 rounded-lg text-gray-800 w-full p-3 outline-none"
+            ></textarea>
+
+            <div class="mt-2 flex flex-wrap gap-2">
+              <button
+                @click.prevent="addQuickPray('Semoga berkah dan bermanfaat.')"
+                class="bg-gray-200 text-gray-700 text-xs font-semibold px-3 py-1 rounded-full hover:bg-gray-300 transition"
+              >
+                🤲 Semoga Berkah
+              </button>
+              <button
+                @click.prevent="addQuickPray('Semoga menjadi amal jariyah.')"
+                class="bg-gray-200 text-gray-700 text-xs font-semibold px-3 py-1 rounded-full hover:bg-gray-300 transition"
+              >
+                💖 Amal Jariyah
+              </button>
+              <button
+                @click.prevent="addQuickPray('Untuk almarhum/almarhumah...')"
+                class="bg-gray-200 text-gray-700 text-xs font-semibold px-3 py-1 rounded-full hover:bg-gray-300 transition"
+              >
+                💭 Untuk Almarhum/ah
+              </button>
             </div>
           </div>
 
@@ -91,7 +107,6 @@
 </template>
 
 <script>
-// Bagian script tidak perlu diubah
 import { reactive } from "vue";
 import { useStore } from "vuex";
 import { useRoute, useRouter } from "vue-router";
@@ -117,6 +132,15 @@ export default {
 
     function goBack() {
       router.go(-1);
+    }
+
+    function addQuickPray(text) {
+      if (donation.pray.includes(text)) return;
+      if (donation.pray) {
+        donation.pray += ` ${text}`;
+      } else {
+        donation.pray = text;
+      }
     }
 
     function storeDonation() {
@@ -156,6 +180,7 @@ export default {
       storeDonation,
       isiNominal,
       goBack,
+      addQuickPray,
     };
   },
 };
