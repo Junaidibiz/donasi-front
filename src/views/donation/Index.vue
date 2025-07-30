@@ -1,16 +1,16 @@
 <template>
-  <div class="pb-20 pt-24">
-    <div class="container mx-auto grid grid-cols-1 p-3 sm:w-full md:w-5/12">
-      <div class="bg-white rounded-md shadow-md p-5">
-        <div class="text-xl">RIWAYAT DONASI SAYA</div>
-        <div class="border-2 border-gray-200 mt-3 mb-2"></div>
+  <div class="bg-white sm:bg-transparent pt-24 pb-20">
+    <div class="container mx-auto grid grid-cols-1 sm:p-3 sm:w-full md:w-5/12">
+      <div class="bg-white sm:rounded-md sm:shadow-md sm:p-5">
+        <!-- <div class="text-xl p-3 sm:p-0">RIWAYAT DONASI SAYA</div>
+        <div class="border-2 border-gray-200 mt-3 mb-2 mx-3 sm:mx-0"></div> -->
 
-        <div v-if="donations && donations.length > 0">
+        <div v-if="donations && donations.length > 0" class="p-3 sm:p-0">
           <div class="mt-5 space-y-4">
             <div v-for="donation in donations" :key="donation.id">
               <div v-if="donation.campaign && donation.campaign.slug">
                 <div
-                  class="bg-gray-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center w-full space-y-4 sm:space-y-0 sm:space-x-4"
+                  class="bg-gray-100 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center w-full space-y-4 sm:space-y-0 sm:space-x-4"
                 >
                   <img
                     class="w-full sm:w-32 h-40 sm:h-28 object-cover rounded-lg flex-shrink-0"
@@ -70,7 +70,7 @@
               </div>
               <div
                 v-else
-                class="bg-gray-200 rounded-xl p-4 text-center text-gray-500"
+                class="bg-gray-100 rounded-xl p-4 text-center text-gray-500"
               >
                 Data Campaign untuk donasi ini tidak tersedia.
               </div>
@@ -86,7 +86,7 @@
             </a>
           </div>
         </div>
-        <div v-else>
+        <div v-else class="p-3 sm:p-0">
           <div class="mb-3 bg-red-500 text-white p-4 rounded-md">
             Anda Belum Memiliki Transaksi Donasi Saat ini!
           </div>
@@ -97,40 +97,60 @@
 </template>
 
 <script>
-//hook vue
+// Bagian <script> tidak perlu diubah
 import { computed, onMounted } from "vue";
-//hook vuex
 import { useStore } from "vuex";
-//hook vue router
-import { useRouter } from "vue-router"; // <-- Import useRouter
-// Import mixin
-import globalMixins from "@/mixins"; // Pastikan path ini benar
+import { useRoute, useRouter } from "vue-router";
+import globalMixins from "@/mixins";
 
 export default {
   name: "DonationComponent",
   setup() {
-    //store vuex
     const store = useStore();
-    //router
-    const router = useRouter(); // <-- Inisialisasi useRouter
+    const router = useRouter();
+    const route = useRoute();
 
-    //onMounted akan menjalankan action "getDonation" di module "donation"
+    const payment = (snap_token) => {
+      if (window.snap) {
+        window.snap.pay(snap_token, {
+          onSuccess: () => {
+            router.push({ name: "donation.index" });
+          },
+          onPending: () => {
+            router.push({ name: "donation.index" });
+          },
+          onError: (result) => {
+            console.error("Payment error:", result);
+            router.push({ name: "donation.index" });
+          },
+          onClose: () => {
+            console.log("Payment popup closed");
+          },
+        });
+      } else {
+        console.error("Midtrans Snap is not loaded.");
+      }
+    };
+
     onMounted(() => {
-      store.dispatch("donation/getDonation"); // <-- Memanggil action getDonation
+      store.dispatch("donation/getDonation");
+
+      const snapToken = route.query.snap_token;
+      if (snapToken) {
+        payment(snapToken);
+        router.replace({ query: {} });
+      }
     });
 
-    // Fungsi utilitas untuk membersihkan string agar aman digunakan sebagai nilai atribut HTML
     const sanitizeAttribute = (str) => {
       if (typeof str !== "string") {
         return "";
       }
       return str
-        .replace(/<!--.*?-->/g, "")
         .replace(/[<>&"']/g, "")
         .replace(/[\u0000-\u001F\u007F-\u009F]/g, "");
     };
 
-    // Fungsi utilitas untuk memformat tanggal
     const formatDate = (dateString) => {
       if (!dateString) return "";
       const date = new Date(dateString);
@@ -138,7 +158,6 @@ export default {
       return date.toLocaleDateString("en-GB", options).replace(/ /g, "-");
     };
 
-    //digunakan untuk get data state "donations" di module "donation"
     const donations = computed(() => {
       const fetchedDonations = Array.isArray(store.state.donation.donations)
         ? store.state.donation.donations
@@ -148,7 +167,7 @@ export default {
         const LARAVEL_BASE_URL = "http://donasi-dm.test";
 
         let campaignImageUrl;
-        if (donation.campaign.image) {
+        if (donation.campaign && donation.campaign.image) {
           if (
             donation.campaign.image.startsWith("http://") ||
             donation.campaign.image.startsWith("https://")
@@ -171,52 +190,18 @@ export default {
       });
     });
 
-    //digunakan untuk get data state "nextExists" di module "donation"
     const nextExists = computed(() => {
       return store.state.donation.nextExists;
     });
 
-    //digunakan untuk get data state "nextPage" di module "donation"
     const nextPage = computed(() => {
       return store.state.donation.nextPage;
     });
 
-    //loadMore function
     function loadMore() {
       store.dispatch("donation/getLoadMore", nextPage.value);
     }
 
-    //function payment "Midtrans"
-    function payment(snap_token) {
-      if (window.snap) {
-        // Pastikan window.snap sudah tersedia
-        window.snap.pay(snap_token, {
-          onSuccess: function () {
-            router.push({ name: "donation.index" });
-          },
-          onPending: function () {
-            router.push({ name: "donation.index" });
-          },
-          onError: function (result) {
-            console.error("Payment error:", result);
-            router.push({ name: "donation.index" });
-          },
-          onClose: function () {
-            // Opsional: Handle jika popup ditutup tanpa menyelesaikan transaksi
-            console.log(
-              "Payment popup closed without finishing the transaction"
-            );
-            // router.push({name: 'donation.index'}); // Bisa diarahkan ulang atau biarkan di halaman saat ini
-          },
-        });
-      } else {
-        console.error("Midtrans Snap is not loaded.");
-        // Beri tahu pengguna bahwa pembayaran tidak dapat diproses (misalnya dengan toast)
-        // toast.error("Pembayaran tidak dapat diproses. Coba lagi nanti.");
-      }
-    }
-
-    // Ekstraksi method dari mixin agar tersedia di template
     const { formatPrice } = globalMixins.methods;
 
     return {
@@ -227,7 +212,7 @@ export default {
       formatPrice,
       sanitizeAttribute,
       formatDate,
-      payment, // <-- Kembalikan fungsi payment
+      payment,
     };
   },
 };

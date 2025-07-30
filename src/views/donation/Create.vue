@@ -157,9 +157,15 @@ export default {
 
       store
         .dispatch("donation/storeDonation", dataToSend)
-        .then(() => {
+        .then((response) => {
           toast.success("Transaksi Berhasil Dibuat!");
-          router.push({ name: "donation.index" });
+
+          const snapToken = response.data.data.snap_token;
+
+          router.push({
+            name: "donation.index",
+            query: { snap_token: snapToken },
+          });
         })
         .catch((error) => {
           console.error("Error storing donation:", error);
